@@ -1,8 +1,12 @@
+<!-- 로그인 페이지 -->
 <script>
 	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
-	import axios from 'axios'
+	import { goto } from '$app/navigation'
 	import { showToast } from '$lib/util/alerts'
+	import useApi from '$lib/util/api'
+
+	const { httpPost, endPoints } = useApi()
 
 	let email = 'pointjumpit@gmail.com'
 	let password = '!als970321!'
@@ -17,26 +21,30 @@
 			return
 		}
 
-		try {
-			const res = await axios.post(
-				'/api/auth',
-				{
-					email,
-					password
-				},
-				{
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				}
-			)
-			console.log(res)
-		} catch (error) {
-			console.error(error)
-		} finally {
-			email = ''
-			password = ''
+		const data = {
+			email: email,
+			password: password
 		}
+
+		httpPost(
+			endPoints.AUTH_LOGIN,
+			'login',
+			data,
+			false,
+			async (res) => {
+				await goto('/dashboard')
+				sweetToast('로그인 되었습니다!', 'success')
+				console.log(res)
+			},
+			(err) => {
+				console.log(err)
+			},
+			null,
+			() => {
+				email = ''
+				password = ''
+			}
+		)
 	}
 
 	function sweetToast(title, icon) {
@@ -80,7 +88,11 @@
 	.main_logo_box {
 		position: absolute;
 		top: -70px;
-		left: 35%;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	.main_logo_img {
+		animation: spin 5s linear infinite;
 	}
 	.main_box {
 		position: relative;
@@ -142,7 +154,8 @@
 		.main_logo_box {
 			position: absolute;
 			top: -50px;
-			left: 35%;
+			left: 50%;
+			transform: translateX(-50%);
 		}
 		.main_logo_img {
 			width: 100px;
@@ -166,7 +179,8 @@
 		}
 		.main_logo_box {
 			top: -60px;
-			left: 40%;
+			left: 50%;
+			transform: translateX(-50%);
 		}
 		.main_logo_img {
 			width: 120px;
@@ -182,6 +196,15 @@
 		button {
 			width: 35%;
 			font-size: 0.75rem;
+		}
+	}
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
 		}
 	}
 </style>
