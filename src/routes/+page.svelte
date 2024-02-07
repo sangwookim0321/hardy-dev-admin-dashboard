@@ -1,83 +1,187 @@
 <script>
+	import { onMount } from 'svelte'
+	import { browser } from '$app/environment'
+	import axios from 'axios'
+	import { showToast } from '$lib/util/alerts'
 
+	let email = 'pointjumpit@gmail.com'
+	let password = '!als970321!'
+
+	async function login() {
+		if (!email) {
+			sweetToast('이메일을 입력해주세요', 'warning')
+			return
+		}
+		if (!password) {
+			sweetToast('비밀번호를 입력해주세요', 'warning')
+			return
+		}
+
+		try {
+			const res = await axios.post(
+				'/api/auth',
+				{
+					email,
+					password
+				},
+				{
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}
+			)
+			console.log(res)
+		} catch (error) {
+			console.error(error)
+		} finally {
+			email = ''
+			password = ''
+		}
+	}
+
+	function sweetToast(title, icon) {
+		showToast({
+			title: title,
+			icon: icon
+		})
+	}
+
+	onMount(() => {
+		if (!browser) {
+			console.log('This is a browser environment')
+			return
+		}
+	})
 </script>
 
 <main class="main">
-    <div class="main_logo_box">
-        <img src="/main-logo-128.png" alt="main-logo">
-    </div>
-    <div class="main_box">
-        <span>Hardy Dev Admin DashBoard</span>
-        <div>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Password">
-            <button>LOGIN</button>
-        </div>
-    </div>
+	<div class="main_box">
+		<div class="main_logo_box">
+			<img class="main_logo_img" src="/main-logo-128.png" alt="main-logo" />
+		</div>
+		<span>Hardy Admin DashBoard</span>
+		<div>
+			<input type="email" placeholder="Email" bind:value={email} />
+			<input type="password" placeholder="Password" bind:value={password} />
+			<button on:click={login}>LOGIN</button>
+		</div>
+	</div>
 </main>
 
 <style>
-    .main {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: var(--main-bg-gray);
-    }
-    .main_logo_box {
-        position: absolute;
-        top: 250px;
-    }
-    .main_box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
-        max-width: 25rem;
-        height: 20rem;
-        padding: 0 1rem;
-        background-color: var(--main-bg-dark);
-        border-radius: 1rem;
-    }
-    span {
-        display: block;
-        margin: 1rem 0;
-        font-size: 1.3rem;
-        text-align: center;
-        color: #fff;
-    }
-    .main_box div {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem; /* 인풋 사이의 간격 */
-    align-items: center; /* 중앙 정렬 */
-    }
-    input {
-    width: 80%; /* 인풋의 너비 */
-    padding: 0.5rem; /* 패딩으로 인풋의 높이 조정 */
-    margin: 0.5rem 0; /* 인풋 사이의 마진으로 간격 추가 */
-    border: 1px solid #ccc; /* 테두리 스타일 */
-    border-radius: 0.5rem; /* 테두리 둥근 처리 */
-    background-color: #fff; /* 배경색 */
-    font-size: 1rem; /* 폰트 사이즈 */
-    }
-    input:focus {
-    border-color: #816BFF; /* 포커스 시 테두리 색상 변경 */
-    outline: none; /* 기본 아웃라인 제거 */
-    }
-    button {
-        width: 20%; /* 버튼의 너비 */
-        padding: 0.5rem; /* 패딩으로 버튼의 높이 조정 */
-        margin: 0.5rem 0; /* 버튼 사이의 마진으로 간격 추가 */
-        border: none; /* 테두리 스타일 */
-        border-radius: 0.5rem; /* 테두리 둥근 처리 */
-        background-color: #816BFF; /* 배경색 */
-        color: #fff; /* 폰트 색상 */
-        font-size: 0.8rem; /* 폰트 사이즈 */
-        cursor: pointer; /* 커서 스타일 변경 */
-    }
-    button:hover {
-        background-color: #6A5ACD; /* 호버 시 배경색 변경 */
-    }
+	.main {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		background-color: var(--main-bg-gray);
+	}
+	.main_logo_box {
+		position: absolute;
+		top: -70px;
+		left: 35%;
+	}
+	.main_box {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		width: 100%;
+		max-width: 25rem;
+		height: 20rem;
+		padding: 0 1rem;
+		background-color: var(--main-bg-dark);
+		border-radius: 1rem;
+	}
+	span {
+		display: block;
+		margin: 1rem 0;
+		font-size: 1.3rem;
+		text-align: center;
+		color: #fff;
+	}
+	.main_box div {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
+	}
+	input {
+		width: 80%;
+		padding: 0.5rem;
+		margin: 0.5rem 0;
+		border: 1px solid #ccc;
+		border-radius: 0.5rem;
+		background-color: #fff;
+		font-size: 1rem;
+	}
+	input:focus {
+		border-color: #816bff;
+		outline: none;
+	}
+	button {
+		width: 30%;
+		padding: 0.5rem;
+		margin: 0.5rem 0;
+		border: none;
+		border-radius: 0.5rem;
+		background-color: #816bff;
+		color: #fff;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+	button:hover {
+		background-color: #6a5acd;
+	}
+
+	@media (max-width: 768px) {
+		.main_box {
+			max-width: 15rem;
+		}
+		.main_logo_box {
+			position: absolute;
+			top: -50px;
+			left: 35%;
+		}
+		.main_logo_img {
+			width: 100px;
+			height: 100px;
+		}
+		span {
+			font-size: 1rem;
+		}
+		input {
+			width: 90%;
+			font-size: 0.8rem;
+		}
+		button {
+			width: 40%;
+			font-size: 0.7rem;
+		}
+	}
+	@media (min-width: 768px) and (max-width: 1024px) {
+		.main_box {
+			max-width: 20rem;
+		}
+		.main_logo_box {
+			top: -60px;
+			left: 40%;
+		}
+		.main_logo_img {
+			width: 120px;
+			height: 120px;
+		}
+		span {
+			font-size: 1.2rem;
+		}
+		input {
+			width: 85%;
+			font-size: 0.9rem;
+		}
+		button {
+			width: 35%;
+			font-size: 0.75rem;
+		}
+	}
 </style>
