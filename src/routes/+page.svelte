@@ -32,11 +32,14 @@
 			data,
 			false,
 			async (res) => {
+				document.cookie = `refreshToken=${res.data.refreshToken}; path=/; max-age=86400;`
+
 				await goto('/dashboard')
 				sweetToast('로그인 되었습니다!', 'success')
 				console.log(res)
 			},
 			(err) => {
+				sweetToast('로그인 오류', 'error')
 				console.log(err)
 			},
 			null,

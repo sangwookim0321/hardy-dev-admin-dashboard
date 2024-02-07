@@ -30,8 +30,11 @@ const Toast = Swal.mixin({
 })
 
 export function showToast({ title, icon }) {
+	const isMobile = window.innerWidth < 768
+
 	return Toast.fire({
 		title,
-		icon
+		icon,
+		position: isMobile ? 'bottom' : 'top-end'
 	})
 }

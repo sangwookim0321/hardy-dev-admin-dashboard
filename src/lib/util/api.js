@@ -26,7 +26,8 @@ const useApi = () => {
 
 	const endPoints = {
 		// DOMAIN: import.meta.env.VITE_APP_DOMAIN,
-		AUTH_LOGIN: '/api/auth'
+		AUTH_LOGIN: '/api/auth',
+		REFRESH_TOKEN: '/api/refreshToken'
 	}
 
 	const httpGet = async (callUrl, caller, useToken, success, fail, redirection) => {
