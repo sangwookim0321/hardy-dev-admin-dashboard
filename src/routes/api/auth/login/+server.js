@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { json } from '@sveltejs/kit'
 
 export async function POST({ request }) {
+	// 로그인 API
 	const { email, password } = await request.json()
 
 	try {
@@ -40,6 +41,7 @@ export async function POST({ request }) {
 			{ status: 200 }
 		)
 	} catch (err) {
+		console.log(err)
 		return json({ error: '서버 에러' }, { status: 500 })
 	}
 }

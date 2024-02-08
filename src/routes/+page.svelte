@@ -4,6 +4,7 @@
 	import { browser } from '$app/environment'
 	import { goto } from '$app/navigation'
 	import { showToast } from '$lib/util/alerts'
+	import { storeAccessToken } from '$lib/store/store'
 	import useApi from '$lib/util/api'
 
 	const { httpPost, endPoints } = useApi()
@@ -11,7 +12,7 @@
 	let email = 'pointjumpit@gmail.com'
 	let password = '!als970321!'
 
-	async function login() {
+	function login() {
 		if (!email) {
 			sweetToast('이메일을 입력해주세요', 'warning')
 			return
@@ -33,14 +34,15 @@
 			false,
 			async (res) => {
 				document.cookie = `refreshToken=${res.data.refreshToken}; path=/; max-age=86400;`
+				storeAccessToken.set(res.data.accessToken)
+				console.log($storeAccessToken)
 
 				await goto('/dashboard')
 				sweetToast('로그인 되었습니다!', 'success')
 				console.log(res)
 			},
 			(err) => {
-				sweetToast('로그인 오류', 'error')
-				console.log(err)
+				sweetToast(err.response.data.error, 'error')
 			},
 			null,
 			() => {
@@ -71,11 +73,14 @@
 			<img class="main_logo_img" src="/main-logo-128.png" alt="main-logo" />
 		</div>
 		<span>Hardy Admin DashBoard</span>
-		<div>
-			<input type="email" placeholder="Email" bind:value={email} />
-			<input type="password" placeholder="Password" bind:value={password} />
-			<button on:click={login}>LOGIN</button>
-		</div>
+		<!-- form 태그 추가 -->
+		<form on:submit|preventDefault={login}>
+			<div>
+				<input type="email" placeholder="Email" bind:value={email} />
+				<input type="password" placeholder="Password" bind:value={password} />
+				<button type="submit">LOGIN</button>
+			</div>
+		</form>
 	</div>
 </main>
 

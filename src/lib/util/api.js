@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { storeAccessToken } from '../store/store'
 
 const useApi = () => {
 	let pending_get = {}
@@ -11,23 +12,24 @@ const useApi = () => {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			timeout: 120000
+			timeout: 60000
 		}
 	}
 	const reqOptionWithToken = () => {
+		const token = get(storeAccessToken)
 		return {
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + sessionStorage.getItem('accessToken')
+				Authorization: token ? `Bearer ${token}` : undefined
 			},
-			timeout: 120000
+			timeout: 60000
 		}
 	}
 
 	const endPoints = {
 		// DOMAIN: import.meta.env.VITE_APP_DOMAIN,
-		AUTH_LOGIN: '/api/auth',
-		REFRESH_TOKEN: '/api/refreshToken'
+		AUTH_LOGIN: '/api/auth/login',
+		REFRESH_TOKEN: '/api/auth/refresh'
 	}
 
 	const httpGet = async (callUrl, caller, useToken, success, fail, redirection) => {
@@ -42,11 +44,9 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
-			let token = sessionStorage.getItem('accessToken')
-			if (token && token.length > 0) {
-				_reqOption = reqOptionWithToken()
-			} else {
-				redirection() // 토큰이 없을 경우 리다이렉션 콜백
+			_reqOption = reqOptionWithToken()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
 			}
 		}
 
@@ -81,11 +81,9 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
-			let token = sessionStorage.getItem('accessToken')
-			if (token && token.length > 0) {
-				_reqOption = reqOptionWithToken()
-			} else {
-				redirection() // 토큰이 없을 경우 리다이렉션 콜백
+			_reqOption = reqOptionWithToken()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
 			}
 		}
 
@@ -112,11 +110,9 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
-			let token = sessionStorage.getItem('accessToken')
-			if (token && token.length > 0) {
-				_reqOption = reqOptionWithToken()
-			} else {
-				redirection() // 토큰이 없을 경우 리다이렉션 콜백
+			_reqOption = reqOptionWithToken()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
 			}
 		}
 
@@ -142,11 +138,9 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
-			let token = sessionStorage.getItem('accessToken')
-			if (token && token.length > 0) {
-				_reqOption = reqOptionWithToken()
-			} else {
-				redirection() // 토큰이 없을 경우 리다이렉션 콜백
+			_reqOption = reqOptionWithToken()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
 			}
 		}
 
