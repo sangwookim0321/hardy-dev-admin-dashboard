@@ -25,8 +25,11 @@ button,
 span,
 input,
 p,
+a,
 div {
 	font-family: 'Pretendard', sans-serif;
+}
+a {
 }
 
 /* 모바일 기기용 SweetAlert2 스타일 조정 */
