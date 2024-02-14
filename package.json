@@ -20,6 +20,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@supabase/supabase-js": "^2.39.6",
 		"@vercel/postgres": "^0.7.2",
 		"axios": "^1.6.7",
 		"bcrypt": "^5.1.1",

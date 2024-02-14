@@ -4,8 +4,16 @@
 	--primary-color: #007bff;
 	--secondary-color: #6c757d;
 	--main-bg-dark: #1b1c1d;
-	--main-bg-gray: #343a40;
+	--main-bg-gray: rgb(61, 61, 61);
+	--main-bg-lightGray: #ccc;
 	--main-bg-purple: #816bff;
+	--main-bg-green: #28a745;
+	--main-bg-red: #dc3545;
+	--main-bg-yellow: #ffc107;
+	--main-bg-blue: #007bff;
+	--main-bg-orange: #fd7e14;
+	--main-bg-cyan: #17a2b8;
+	--main-bg-white: #ffffff;
 
 	/* 폰트 사이즈 변수 정의 */
 	--font-size-normal: 16px;

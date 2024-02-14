@@ -119,7 +119,7 @@
 		margin: 1rem 0;
 		font-size: 1.3rem;
 		text-align: center;
-		color: #fff;
+		color: var(--main-bg-white);
 	}
 	.main_box div {
 		display: flex;
@@ -131,13 +131,13 @@
 		width: 80%;
 		padding: 0.5rem;
 		margin: 0.5rem 0;
-		border: 1px solid #ccc;
+		border: 1px solid var(--main-bg-lightGray);
 		border-radius: 0.5rem;
-		background-color: #fff;
+		background-color: var(--main-bg-white);
 		font-size: 1rem;
 	}
 	input:focus {
-		border-color: #816bff;
+		border-color: var(--main-bg-purple);
 		outline: none;
 	}
 	button {
@@ -146,13 +146,13 @@
 		margin: 0.5rem 0;
 		border: none;
 		border-radius: 0.5rem;
-		background-color: #816bff;
-		color: #fff;
+		background-color: var(--main-bg-purple);
+		color: var(--main-bg-white);
 		font-size: 0.8rem;
 		cursor: pointer;
 	}
 	button:hover {
-		background-color: #6a5acd;
+		background-color: var(--main-bg-purple);
 	}
 
 	@media (max-width: 768px) {

@@ -1,11 +1,29 @@
 <script>
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { showToast } from '$lib/util/alerts'
 	import useApi from '$lib/util/api'
 	import { storeAccessToken } from '$lib/store/store'
+	import { storePath } from '$lib/store/store'
 
 	const { httpPost, endPoints } = useApi()
+
+	let currentPath
+
+	const unsubscribe = storePath.subscribe((value) => {
+		currentPath = value
+	})
+
+	const routePaths = [
+		'/admin/dashBoard',
+		'/admin/mbtiTest',
+		'/admin/abilityTest',
+		'/admin/settings'
+	]
+
+	onDestroy(() => {
+		unsubscribe()
+	})
 
 	onMount(() => {
 		if ($storeAccessToken) {
@@ -75,13 +93,53 @@
 		</div>
 		<div class="sidebar_menu_box">
 			<div class="sidebar_list_box_01">
-				<a href="/admin/dashBoard">대시보드</a>
-				<a href="/admin/abilityTest">능력고사 테스트</a>
-				<a href="/admin/mbtiTest">MBTI 테스트</a>
+				<div class="icon_box">
+					<img
+						src="/icon_arrowUp.svg"
+						alt="arrowUp"
+						class={currentPath === '/admin/dashBoard' ? 'rotation' : 'noRotation'}
+					/>
+					<a
+						href="/admin/dashBoard"
+						class={currentPath === '/admin/dashBoard' ? 'highlighted' : 'noHighlight'}>대시보드</a
+					>
+				</div>
+				<div class="icon_box">
+					<img
+						src="/icon_arrowUp.svg"
+						alt="arrowUp"
+						class={currentPath === '/admin/mbtiTest' ? 'rotation' : 'noRotation'}
+					/>
+					<a
+						href="/admin/mbtiTest"
+						class={currentPath === '/admin/mbtiTest' ? 'highlighted' : 'noHighlight'}>MBTI 테스트</a
+					>
+				</div>
+				<div class="icon_box">
+					<img
+						src="/icon_arrowUp.svg"
+						alt="arrowUp"
+						class={currentPath === '/admin/abilityTest' ? 'rotation' : 'noRotation'}
+					/>
+					<a
+						href="/admin/abilityTest"
+						class={currentPath === '/admin/abilityTest' ? 'highlighted' : 'noHighlight'}
+						>능력고사 테스트</a
+					>
+				</div>
 			</div>
 			<div class="sidebar_list_box_02">
-				<a href="/settings">설정</a>
-				<p>로그아웃</p>
+				<div class="icon_box">
+					<img src="/icon_setting.svg" alt="setting" />
+					<a
+						href="/admin/settings"
+						class={currentPath === '/admin/settings' ? 'highlighted' : 'noHighlight'}>설정</a
+					>
+				</div>
+				<div class="icon_box">
+					<img src="/icon_logout.svg" alt="logout" />
+					<p>로그아웃</p>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -100,8 +158,8 @@
 		flex-direction: column;
 		align-items: center;
 		width: 250px;
-		background-color: rgb(61, 61, 61);
-		color: white;
+		background-color: var(--main-bg-gray);
+		color: var(--main-bg-white);
 		padding: 1rem;
 		position: fixed;
 		height: 100vh;
@@ -145,25 +203,44 @@
 		flex-direction: column;
 	}
 	.sidebar a {
-		margin: 1rem 0;
 		cursor: pointer;
 		text-decoration: none;
-		color: #fff;
 	}
 	.sidebar a:hover {
-		color: #007bff;
+		color: var(--main-bg-purple);
 	}
 	.sidebar p {
-		margin: 1rem 0;
 		cursor: pointer;
 	}
 	.sidebar p:hover {
-		color: #007bff;
+		color: var(--main-bg-purple);
+	}
+	.highlighted {
+		color: var(--main-bg-purple);
+	}
+	.noHighlight {
+		color: var(--main-bg-white);
 	}
 	.sidebar div {
 		margin: 1rem 0;
 	}
+	.icon_box {
+		display: flex;
+	}
+	.icon_box img {
+		width: 1rem;
+		margin-right: 1rem;
+	}
+	.rotation {
+		transform: rotate(90deg);
+		transition: transform 0.2s ease-in-out;
+	}
+	.noRotation {
+		transform: rotate(0deg);
+		transition: transform 0.2s ease-in-out;
+	}
 	.content {
+		width: 100%;
 		margin-left: 250px;
 		padding: 5rem 6rem;
 	}
