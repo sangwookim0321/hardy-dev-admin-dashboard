@@ -85,7 +85,7 @@
 			{/each}
 			<button on:click={addQuestion}>질문 추가</button>
 		</div>
-		<button on:click={saveTest}>저장</button>
+		<button class="save_button" on:click={saveTest}>저장</button>
 	</div>
 </main>
 
@@ -101,7 +101,8 @@
 	}
 	.main_top_box span {
 		font-size: 1.5rem;
-		color: var(--main-bg-gray);
+		font-weight: 600;
+		color: var(--main-bg-purple);
 	}
 	.main_box {
 		display: flex;
@@ -167,22 +168,44 @@
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-lightGray);
+		color: var(--main-bg-white);
 		cursor: pointer;
 	}
 	label {
 		margin-top: 1rem;
 		font-size: 0.9rem;
 	}
+	.save_button {
+		margin-top: 3rem;
+		padding: 1rem 3rem;
+		border: none;
+		border-radius: 10px;
+		background-color: var(--main-bg-purple);
+		color: white;
+		cursor: pointer;
+	}
 
 	@media (max-width: 768px) {
 		.main_top_box {
-			margin: 1rem 0 2rem 0;
+			margin: 2rem 2rem 2rem 2rem;
 		}
 		.main_top_box img {
-			width: 0.6rem;
+			width: 1rem;
 		}
 		.main_top_box span {
-			font-size: 1.2rem;
+			font-size: 1.5rem;
+		}
+		input {
+			font-size: 1.5rem;
+		}
+		label {
+			font-size: 1.5rem;
+		}
+		textarea {
+			font-size: 1.5rem;
+		}
+		.questions {
+			width: 60%;
 		}
 	}
 </style>
