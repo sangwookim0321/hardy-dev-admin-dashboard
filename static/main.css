@@ -23,10 +23,8 @@
 	--padding-standard: 1rem;
 }
 
-h1,
-h2,
-h3 {
-	color: var(--primary-color);
+html {
+	font-size: 10px;
 }
 
 button,

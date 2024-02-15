@@ -122,7 +122,7 @@
 <div class="layout">
 	<div class="sidebar">
 		<div class="sidebar_logo_box">
-			<img src="/main-logo-128.png" alt="main-logo" />
+			<img class="sidebar_logo_img" src="/main-logo-128.png" alt="main-logo" />
 			<p>Hardy Dev. Admin App</p>
 			<button style="background-color: transparent; border: none;" on:click={toggleSidebar}>
 				<img src="/icon_s_menu.svg" alt="menu" class="mobile-menu" />
@@ -146,7 +146,9 @@
 						/>
 						<div
 							style="cursor: pointer;"
-							class={submenuVisibility[item.id] ? 'highlightedWhite' : 'noHighlight'}
+							class="sidebar_list_box_01_title {submenuVisibility[item.id]
+								? 'highlightedWhite'
+								: 'noHighlight'}"
 						>
 							{item.title}
 						</div>
@@ -183,7 +185,7 @@
 						class={currentPath === '/admin/settings' ? 'highlightedPurple' : 'noHighlight'}>설정</a
 					>
 				</div>
-				<div class="icon_box" on:click={closeSidebar}>
+				<div class="icon_box" tabindex="0" role="button" on:click={closeSidebar}>
 					<img src="/icon_logout.svg" alt="logout" />
 					<p>로그아웃</p>
 				</div>
@@ -288,11 +290,11 @@
 		color: var(--main-bg-lightGray);
 	}
 	.rotation {
-		transform: rotate(90deg);
+		transform: rotate(0deg);
 		transition: transform 0.2s ease-in-out;
 	}
 	.noRotation {
-		transform: rotate(0deg);
+		transform: rotate(180deg);
 		transition: transform 0.2s ease-in-out;
 	}
 	.sub_menu {
@@ -329,7 +331,7 @@
 		.content {
 			width: 100%;
 			margin-left: 0px;
-			padding: 4rem 1rem;
+			padding: 6rem 1rem;
 		}
 		.sidebar {
 			flex-direction: column;
@@ -343,17 +345,23 @@
 			width: 100%;
 		}
 		.sidebar_logo_box p {
-			font-size: 0.9rem;
+			font-size: 1.2rem;
 		}
-		.sidebar_logo_box img {
-			width: 1.5rem;
+		.sidebar_logo_img {
+			width: 3.5rem;
 			margin: 0rem 1rem;
 		}
 		.mobile-menu {
 			display: block;
+			width: 2rem;
+			margin: 0rem 1rem;
 		}
 		.sidebar_menu_box {
-			height: auto;
+			display: flex;
+			align-items: center;
+			width: 100%;
+			background-color: var(--main-bg-gray);
+			height: 100vh;
 			overflow: hidden;
 			max-height: 0;
 			transform-origin: top;
@@ -363,8 +371,34 @@
 				transform 0.2s ease;
 		}
 		.sidebar_menu_box.active {
-			max-height: 500px;
+			max-height: 100vh;
 			transform: scaleY(1);
+		}
+		.sidebar_list_box_01 img {
+			width: 1.5rem;
+		}
+		.sidebar_list_box_01_title {
+			font-size: 1.5rem;
+		}
+		.sidebar_list_box_02 {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			width: 90%;
+			margin: 5.5rem 0;
+		}
+		.sidebar_list_box_02 img {
+			width: 1.5rem;
+		}
+		.sidebar_list_box_02 a {
+			font-size: 1.5rem;
+		}
+		.sidebar_list_box_02 p {
+			font-size: 1.5rem;
+		}
+		.sub_menu a {
+			margin-left: 2.5rem;
+			font-size: 1.3rem;
 		}
 	}
 </style>
