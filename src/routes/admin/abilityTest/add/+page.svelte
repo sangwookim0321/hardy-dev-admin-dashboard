@@ -97,10 +97,10 @@
 	}
 	.main_top_box img {
 		margin-right: 10px;
-		width: 1rem;
+		width: 1.5rem;
 	}
 	.main_top_box span {
-		font-size: 1.5rem;
+		font-size: 2.5rem;
 		font-weight: 600;
 		color: var(--main-bg-purple);
 	}
@@ -116,6 +116,7 @@
 	.test_details {
 		display: flex;
 		flex-direction: column;
+		margin-top: 2rem;
 	}
 	.image_upload {
 		display: flex;
@@ -143,11 +144,11 @@
 	}
 	hr {
 		width: 100%;
-		margin: 3rem 0;
+		margin: 5rem 0;
 		border: 1px solid var(--main-bg-purple);
 	}
 	input {
-		margin: 1rem 0;
+		margin: 2rem 0;
 		border: none;
 		border-bottom: 1px solid var(--main-bg-gray);
 		outline: none;
@@ -161,6 +162,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: 0.5rem 0;
+		font-size: 1.5rem;
 	}
 	button {
 		margin: 1rem 0;
@@ -172,12 +174,12 @@
 		cursor: pointer;
 	}
 	label {
-		margin-top: 1rem;
-		font-size: 0.9rem;
+		margin: 1rem 0;
+		font-size: 1.5rem;
 	}
 	.save_button {
 		margin-top: 3rem;
-		padding: 1rem 3rem;
+		padding: 1rem 6rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-purple);
@@ -206,6 +208,9 @@
 		}
 		.questions {
 			width: 60%;
+		}
+		.save_button {
+			padding: 1rem 4rem;
 		}
 	}
 </style>

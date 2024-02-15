@@ -223,6 +223,7 @@
 	}
 	.sidebar_logo_box p {
 		font-weight: 600;
+		font-size: 1.5rem;
 	}
 	.sidebar_menu_box {
 		display: flex;
@@ -248,10 +249,13 @@
 		flex-direction: column;
 		margin: 3rem 0;
 	}
+	.sidebar_list_box_01_title {
+		font-size: 1.8rem;
+	}
 	.sidebar_list_box_02 {
 		display: flex;
 		flex-direction: column;
-		margin: 1rem 0;
+		margin: 2rem 0;
 	}
 	.sidebar a {
 		cursor: pointer;
@@ -283,10 +287,14 @@
 		transition: transform 0.2s ease-in-out;
 	}
 	.icon_box img {
-		width: 1rem;
+		width: 1.5rem;
 		margin-right: 1rem;
 	}
+	.icon_box a {
+		font-size: 1.5rem;
+	}
 	.icon_box p {
+		font-size: 1.5rem;
 		color: var(--main-bg-lightGray);
 	}
 	.rotation {
@@ -314,8 +322,8 @@
 	}
 	.sub_menu a {
 		display: block;
-		margin-left: 2rem;
-		font-size: 0.9rem;
+		margin-left: 2.5rem;
+		font-size: 1.5rem;
 		padding: 0.5rem 0;
 	}
 	.mobile-menu {

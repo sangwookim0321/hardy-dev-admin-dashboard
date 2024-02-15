@@ -108,8 +108,8 @@
 		flex-direction: column;
 		justify-content: center;
 		width: 100%;
-		max-width: 25rem;
-		height: 20rem;
+		max-width: 40rem;
+		height: 30rem;
 		padding: 0 1rem;
 		background-color: var(--main-bg-dark);
 		border-radius: 1rem;
@@ -117,7 +117,7 @@
 	span {
 		display: block;
 		margin: 1rem 0;
-		font-size: 1.3rem;
+		font-size: 1.5rem;
 		text-align: center;
 		color: var(--main-bg-white);
 	}
@@ -134,7 +134,7 @@
 		border: 1px solid var(--main-bg-lightGray);
 		border-radius: 0.5rem;
 		background-color: var(--main-bg-white);
-		font-size: 1rem;
+		font-size: 1.5rem;
 	}
 	input:focus {
 		border-color: var(--main-bg-purple);
@@ -148,7 +148,7 @@
 		border-radius: 0.5rem;
 		background-color: var(--main-bg-purple);
 		color: var(--main-bg-white);
-		font-size: 0.8rem;
+		font-size: 1.5rem;
 		cursor: pointer;
 	}
 	button:hover {

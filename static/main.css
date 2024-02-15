@@ -36,30 +36,54 @@ div, textarea, label {
 	font-family: 'Pretendard', sans-serif;
 }
 
+.swal2-popup {
+	font-size: 1.5rem !important; /* 폰트 크기 조정 */
+	width: auto !important; /* 너비 자동 조정 */
+	padding: 1.5rem !important; /* 패딩 조정 */
+}
+
+.swal2-title {
+	font-size: 2rem !important; /* 타이틀 폰트 크기 조정 */
+}
+
+.swal2-content {
+	font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
+}
+
+.swal2-styled.swal2-confirm {
+	padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
+	font-size: 1.5rem !important; /* 확인 버튼 폰트 크기 조정 */
+}
+
+.swal2-styled.swal2-cancel {
+	padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
+	font-size: 1.5rem !important; /* 취소 버튼 폰트 크기 조정 */
+}
+
 /* 모바일 기기용 SweetAlert2 스타일 조정 */
 @media (max-width: 768px) {
 	.swal2-popup {
-		font-size: 12px !important; /* 폰트 크기 조정 */
+		font-size: 1.5rem !important; /* 폰트 크기 조정 */
 		width: auto !important; /* 너비 자동 조정 */
-		padding: 1em !important; /* 패딩 조정 */
+		padding: 1.5rem !important; /* 패딩 조정 */
 	}
 
 	.swal2-title {
-		font-size: 1em !important; /* 타이틀 폰트 크기 조정 */
+		font-size: 1.5rem !important; /* 타이틀 폰트 크기 조정 */
 	}
 
 	.swal2-content {
-		font-size: 0.875em !important; /* 내용 폰트 크기 조정 */
+		font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
 	}
 
 	.swal2-styled.swal2-confirm {
-		padding: 0.375em 0.75em !important; /* 확인 버튼 패딩 조정 */
-		font-size: 0.875em !important; /* 확인 버튼 폰트 크기 조정 */
+		padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
+		font-size: 1.2rem !important; /* 확인 버튼 폰트 크기 조정 */
 	}
 
 	.swal2-styled.swal2-cancel {
-		padding: 0.375em 0.75em !important; /* 취소 버튼 패딩 조정 */
-		font-size: 0.875em !important; /* 취소 버튼 폰트 크기 조정 */
+		padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
+		font-size: 1.2rem !important; /* 취소 버튼 폰트 크기 조정 */
 	}
 }
 
