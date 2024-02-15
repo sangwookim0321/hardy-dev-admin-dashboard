@@ -75,7 +75,7 @@
 					{/each}
 					<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
 					<label for="question_etc">기타 문제설명</label>
-					<input type="text" id="question_etc" class="question_etc" />
+					<textarea id="question_etc" class="question_etc"></textarea>
 					<label for="answer">정답</label>
 					<input type="number" id="answer" class="answer" />
 					<label for="score">배점</label>
@@ -136,8 +136,9 @@
 		flex-direction: column;
 		width: 100%;
 	}
-	.description {
-		height: 100px;
+	.description,
+	.question_etc {
+		height: 150px;
 	}
 	hr {
 		width: 100%;
@@ -171,5 +172,17 @@
 	label {
 		margin-top: 1rem;
 		font-size: 0.9rem;
+	}
+
+	@media (max-width: 768px) {
+		.main_top_box {
+			margin: 1rem 0 2rem 0;
+		}
+		.main_top_box img {
+			width: 0.6rem;
+		}
+		.main_top_box span {
+			font-size: 1.2rem;
+		}
 	}
 </style>

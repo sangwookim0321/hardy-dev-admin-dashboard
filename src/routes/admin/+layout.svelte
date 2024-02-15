@@ -45,6 +45,16 @@
 		submenuVisibility[id] = !submenuVisibility[id]
 	}
 
+	let isSidebarOpen = false
+
+	function toggleSidebar() {
+		isSidebarOpen = !isSidebarOpen
+	}
+
+	function closeSidebar() {
+		isSidebarOpen = false
+	}
+
 	onDestroy(() => {
 		unsubscribe()
 	})
@@ -57,16 +67,6 @@
 			refresh()
 		}
 	})
-
-	function toggleMbtiSubmenu() {
-		showMbtiSubmenu = !showMbtiSubmenu
-	}
-
-	function handleKeydown(event) {
-		if (event.key === 'Enter' || event.key === ' ') {
-			toggleMbtiSubmenu()
-		}
-	}
 
 	function sweetToast(title, icon) {
 		showToast({
@@ -124,8 +124,11 @@
 		<div class="sidebar_logo_box">
 			<img src="/main-logo-128.png" alt="main-logo" />
 			<p>Hardy Dev. Admin App</p>
+			<button style="background-color: transparent; border: none;" on:click={toggleSidebar}>
+				<img src="/icon_s_menu.svg" alt="menu" class="mobile-menu" />
+			</button>
 		</div>
-		<div class="sidebar_menu_box">
+		<div class="sidebar_menu_box {isSidebarOpen ? 'active' : ''}">
 			<div class="sidebar_list_box_01">
 				{#each menuItems as item}
 					<div
@@ -151,6 +154,7 @@
 					<div class="sub_menu {submenuVisibility[item.id] ? 'sub_menu_open' : ''}">
 						{#each item.submenu as submenuItem}
 							<a
+								on:click={closeSidebar}
 								href={submenuItem.path}
 								class={currentPath === submenuItem.path ? 'highlightedPurple' : 'noHighlight'}
 							>
@@ -165,6 +169,7 @@
 				<div class="icon_box">
 					<img src="/icon_dashBoard.svg" alt="dashBoard" />
 					<a
+						on:click={closeSidebar}
 						href="/admin/dashBoard"
 						class={currentPath === '/admin/dashBoard' ? 'highlightedPurple' : 'noHighlight'}
 						>대시보드</a
@@ -173,18 +178,19 @@
 				<div class="icon_box">
 					<img src="/icon_setting.svg" alt="setting" />
 					<a
+						on:click={closeSidebar}
 						href="/admin/settings"
 						class={currentPath === '/admin/settings' ? 'highlightedPurple' : 'noHighlight'}>설정</a
 					>
 				</div>
-				<div class="icon_box">
+				<div class="icon_box" on:click={closeSidebar}>
 					<img src="/icon_logout.svg" alt="logout" />
 					<p>로그아웃</p>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="content">
+	<div class="content" on:click={closeSidebar} role="button" tabindex="0">
 		<slot />
 	</div>
 </div>
@@ -310,9 +316,55 @@
 		font-size: 0.9rem;
 		padding: 0.5rem 0;
 	}
+	.mobile-menu {
+		display: none;
+	}
 	.content {
 		width: 100%;
 		margin-left: 250px;
 		padding: 5rem 6rem;
+	}
+	/* 모바일 사이즈 미디어 쿼리 */
+	@media (max-width: 768px) {
+		.content {
+			width: 100%;
+			margin-left: 0px;
+			padding: 4rem 1rem;
+		}
+		.sidebar {
+			flex-direction: column;
+			width: 100%;
+			height: auto;
+			padding: 1rem 0;
+		}
+		.sidebar_logo_box {
+			flex-direction: row;
+			justify-content: space-between;
+			width: 100%;
+		}
+		.sidebar_logo_box p {
+			font-size: 0.9rem;
+		}
+		.sidebar_logo_box img {
+			width: 1.5rem;
+			margin: 0rem 1rem;
+		}
+		.mobile-menu {
+			display: block;
+		}
+		.sidebar_menu_box {
+			height: auto;
+			overflow: hidden;
+			max-height: 0;
+			transform-origin: top;
+			transform: scaleY(0);
+			transition:
+				max-height 0.2s ease,
+				transform 0.2s ease;
+		}
+		.sidebar_menu_box.active {
+			max-height: 500px;
+			transform: scaleY(1);
+		}
 	}
 </style>
