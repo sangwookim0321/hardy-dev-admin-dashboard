@@ -398,7 +398,7 @@
 		}
 		.sub_menu a {
 			margin-left: 2.5rem;
-			font-size: 1.3rem;
+			font-size: 1.6rem;
 		}
 	}
 </style>

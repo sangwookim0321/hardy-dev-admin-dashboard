@@ -157,11 +157,12 @@
 
 	@media (max-width: 768px) {
 		.main_box {
-			max-width: 15rem;
+			max-width: 30rem;
+			height: 25rem;
 		}
 		.main_logo_box {
 			position: absolute;
-			top: -50px;
+			top: -60px;
 			left: 50%;
 			transform: translateX(-50%);
 		}
@@ -170,20 +171,21 @@
 			height: 100px;
 		}
 		span {
-			font-size: 1rem;
+			font-size: 1.5rem;
 		}
 		input {
 			width: 90%;
-			font-size: 0.8rem;
+			font-size: 1.5rem;
 		}
 		button {
 			width: 40%;
-			font-size: 0.7rem;
+			font-size: 1.5rem;
 		}
 	}
 	@media (min-width: 768px) and (max-width: 1024px) {
 		.main_box {
-			max-width: 20rem;
+			max-width: 25rem;
+			height: 25rem;
 		}
 		.main_logo_box {
 			top: -60px;
@@ -195,15 +197,15 @@
 			height: 120px;
 		}
 		span {
-			font-size: 1.2rem;
+			font-size: 1.5rem;
 		}
 		input {
 			width: 85%;
-			font-size: 0.9rem;
+			font-size: 1.5rem;
 		}
 		button {
 			width: 35%;
-			font-size: 0.75rem;
+			font-size: 1.2rem;
 		}
 	}
 
