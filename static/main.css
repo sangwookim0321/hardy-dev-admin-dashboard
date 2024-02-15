@@ -34,10 +34,8 @@ span,
 input,
 p,
 a,
-div {
+div, textarea, label {
 	font-family: 'Pretendard', sans-serif;
-}
-a {
 }
 
 /* 모바일 기기용 SweetAlert2 스타일 조정 */
@@ -65,4 +63,25 @@ a {
 		padding: 0.375em 0.75em !important; /* 취소 버튼 패딩 조정 */
 		font-size: 0.875em !important; /* 취소 버튼 폰트 크기 조정 */
 	}
+}
+
+/* 스크롤바 전체 스타일 */
+textarea::-webkit-scrollbar {
+    width: 6px; /* 스크롤바의 너비 */
+    height: 6px; /* 스크롤바의 높이 (가로 스크롤일 경우) */
+}
+
+/* 스크롤바 트랙 (바탕) 스타일 */
+textarea::-webkit-scrollbar-track {
+    background: #f1f1f1; /* 스크롤바 트랙의 배경색 */
+}
+
+/* 스크롤바 핸들 (움직이는 부분) 스타일 */
+textarea::-webkit-scrollbar-thumb {
+    background: #888; /* 스크롤바 핸들의 색상 */
+}
+
+/* 스크롤바 핸들을 호버할 때 스타일 */
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #555; /* 호버 시 핸들의 색상 */
 }

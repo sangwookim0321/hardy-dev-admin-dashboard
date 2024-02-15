@@ -12,12 +12,4 @@
 	})
 </script>
 
-<main></main>
-
-<style>
-	main {
-		width: 100%;
-		height: 100%;
-		background-color: #f0f0f0;
-	}
-</style>
+<h1>MBTI 테스트 추가 페이지</h1>

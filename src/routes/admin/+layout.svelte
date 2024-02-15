@@ -14,12 +14,36 @@
 		currentPath = value
 	})
 
-	const routePaths = [
-		'/admin/dashBoard',
-		'/admin/mbtiTest',
-		'/admin/abilityTest',
-		'/admin/settings'
+	let menuItems = [
+		{
+			id: 'abilityTest',
+			title: '능력고사 테스트',
+			submenu: [
+				{ path: '/admin/abilityTest/add', label: '추가' },
+				{ path: '/admin/abilityTest/modify', label: '수정' },
+				{ path: '/admin/abilityTest/list', label: '목록' }
+			]
+		},
+		{
+			id: 'mbtiTest',
+			title: 'MBTI 테스트',
+			submenu: [
+				{ path: '/admin/mbtiTest/add', label: '추가' },
+				{ path: '/admin/mbtiTest/modify', label: '수정' },
+				{ path: '/admin/mbtiTest/list', label: '목록' }
+			]
+		}
 	]
+
+	let submenuVisibility = {}
+
+	menuItems.forEach((item) => {
+		submenuVisibility[item.id] = false
+	})
+
+	function toggleSubmenu(id) {
+		submenuVisibility[id] = !submenuVisibility[id]
+	}
 
 	onDestroy(() => {
 		unsubscribe()
@@ -33,6 +57,16 @@
 			refresh()
 		}
 	})
+
+	function toggleMbtiSubmenu() {
+		showMbtiSubmenu = !showMbtiSubmenu
+	}
+
+	function handleKeydown(event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			toggleMbtiSubmenu()
+		}
+	}
 
 	function sweetToast(title, icon) {
 		showToast({
@@ -93,47 +127,54 @@
 		</div>
 		<div class="sidebar_menu_box">
 			<div class="sidebar_list_box_01">
-				<div class="icon_box">
-					<img
-						src="/icon_arrowUp.svg"
-						alt="arrowUp"
-						class={currentPath === '/admin/dashBoard' ? 'rotation' : 'noRotation'}
-					/>
-					<a
-						href="/admin/dashBoard"
-						class={currentPath === '/admin/dashBoard' ? 'highlighted' : 'noHighlight'}>대시보드</a
+				{#each menuItems as item}
+					<div
+						class="icon_box"
+						role="button"
+						tabindex="0"
+						on:click={() => toggleSubmenu(item.id)}
+						on:keydown={(event) =>
+							event.key === 'Enter' || event.key === ' ' ? toggleSubmenu(item.id) : null}
 					>
-				</div>
-				<div class="icon_box">
-					<img
-						src="/icon_arrowUp.svg"
-						alt="arrowUp"
-						class={currentPath === '/admin/mbtiTest' ? 'rotation' : 'noRotation'}
-					/>
-					<a
-						href="/admin/mbtiTest"
-						class={currentPath === '/admin/mbtiTest' ? 'highlighted' : 'noHighlight'}>MBTI 테스트</a
-					>
-				</div>
-				<div class="icon_box">
-					<img
-						src="/icon_arrowUp.svg"
-						alt="arrowUp"
-						class={currentPath === '/admin/abilityTest' ? 'rotation' : 'noRotation'}
-					/>
-					<a
-						href="/admin/abilityTest"
-						class={currentPath === '/admin/abilityTest' ? 'highlighted' : 'noHighlight'}
-						>능력고사 테스트</a
-					>
-				</div>
+						<img
+							src="/icon_arrowUp.svg"
+							alt="arrowUp"
+							class={submenuVisibility[item.id] ? 'rotation' : 'noRotation'}
+						/>
+						<div
+							style="cursor: pointer;"
+							class={submenuVisibility[item.id] ? 'highlightedWhite' : 'noHighlight'}
+						>
+							{item.title}
+						</div>
+					</div>
+					<div class="sub_menu {submenuVisibility[item.id] ? 'sub_menu_open' : ''}">
+						{#each item.submenu as submenuItem}
+							<a
+								href={submenuItem.path}
+								class={currentPath === submenuItem.path ? 'highlightedPurple' : 'noHighlight'}
+							>
+								{submenuItem.label}
+							</a>
+						{/each}
+					</div>
+				{/each}
+				<!-- ------------------------------------------------------------------------------------------------ -->
 			</div>
 			<div class="sidebar_list_box_02">
+				<div class="icon_box">
+					<img src="/icon_dashBoard.svg" alt="dashBoard" />
+					<a
+						href="/admin/dashBoard"
+						class={currentPath === '/admin/dashBoard' ? 'highlightedPurple' : 'noHighlight'}
+						>대시보드</a
+					>
+				</div>
 				<div class="icon_box">
 					<img src="/icon_setting.svg" alt="setting" />
 					<a
 						href="/admin/settings"
-						class={currentPath === '/admin/settings' ? 'highlighted' : 'noHighlight'}>설정</a
+						class={currentPath === '/admin/settings' ? 'highlightedPurple' : 'noHighlight'}>설정</a
 					>
 				</div>
 				<div class="icon_box">
@@ -197,10 +238,12 @@
 	.sidebar_list_box_01 {
 		display: flex;
 		flex-direction: column;
+		margin: 3rem 0;
 	}
 	.sidebar_list_box_02 {
 		display: flex;
 		flex-direction: column;
+		margin: 1rem 0;
 	}
 	.sidebar a {
 		cursor: pointer;
@@ -215,21 +258,28 @@
 	.sidebar p:hover {
 		color: var(--main-bg-purple);
 	}
-	.highlighted {
+	.highlightedPurple {
 		color: var(--main-bg-purple);
 	}
-	.noHighlight {
+	.highlightedWhite {
 		color: var(--main-bg-white);
 	}
-	.sidebar div {
+	.noHighlight {
+		color: var(--main-bg-lightGray);
+	}
+	.sidebar_list_box_02 div {
 		margin: 1rem 0;
 	}
 	.icon_box {
 		display: flex;
+		transition: transform 0.2s ease-in-out;
 	}
 	.icon_box img {
 		width: 1rem;
 		margin-right: 1rem;
+	}
+	.icon_box p {
+		color: var(--main-bg-lightGray);
 	}
 	.rotation {
 		transform: rotate(90deg);
@@ -238,6 +288,27 @@
 	.noRotation {
 		transform: rotate(0deg);
 		transition: transform 0.2s ease-in-out;
+	}
+	.sub_menu {
+		overflow: hidden;
+		max-height: 0;
+		transform-origin: top;
+		transform: scaleY(0);
+		transition:
+			max-height 0.2s ease-out,
+			transform 0.2s ease-out;
+		padding: 1rem 0;
+	}
+
+	.sub_menu_open {
+		max-height: 500px;
+		transform: scaleY(1);
+	}
+	.sub_menu a {
+		display: block;
+		margin-left: 2rem;
+		font-size: 0.9rem;
+		padding: 0.5rem 0;
 	}
 	.content {
 		width: 100%;
