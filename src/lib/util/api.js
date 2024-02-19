@@ -46,14 +46,74 @@ const useApi = () => {
 		}
 	}
 
+	const waitForToken = async () => {
+		let token = get(storeAccessToken)
+		if (!token) {
+			token = await refresh()
+		}
+		return token
+	}
+
+	function getCookie(name) {
+		let cookies = document.cookie.split(';')
+
+		for (let i = 0; i < cookies.length; i++) {
+			let cookie = cookies[i].trim()
+
+			if (cookie.startsWith(name + '=')) {
+				return decodeURIComponent(cookie.substring(name.length + 1))
+			}
+		}
+
+		return null // 찾는 쿠키가 없을 경우 null 반환
+	}
+
+	async function refresh() {
+		let refreshToken = getCookie('refreshToken')
+
+		if (!refreshToken) {
+			await goto('/')
+			sweetToast('갱신 토큰이 없습니다.', 'error')
+			return
+		}
+
+		const data = {
+			refreshToken: refreshToken
+		}
+
+		await httpPost(
+			endPoints.REFRESH_TOKEN,
+			'refresh',
+			data,
+			false,
+			(res) => {
+				storeAccessToken.set(res.data.accessToken)
+			},
+			(err) => {
+				showToast(err.response.data.error, 'error')
+			},
+			null,
+			() => {}
+		)
+	}
+
 	const endPoints = {
 		// DOMAIN: import.meta.env.VITE_APP_DOMAIN,
 		AUTH_LOGIN: '/api/auth/login',
 		REFRESH_TOKEN: '/api/auth/refresh',
-		ABILITY_TEST_ADD: '/api/abilityTest/add'
+		ABILITY_TEST_ADD: '/api/abilityTest/add',
+		ABILITY_TEST_LIST: '/api/abilityTest/list'
 	}
 
-	const httpGet = async (callUrl, caller, useToken, success, fail, redirection) => {
+	const httpGet = async (
+		callUrl,
+		caller,
+		useToken,
+		success,
+		fail,
+		redirection,
+		finallyCallback
+	) => {
 		const reqKey = callUrl + caller
 		if (pending_get[reqKey]) {
 			console.log('duplication api get fail : ' + reqKey)
@@ -65,19 +125,25 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
+			const token = await waitForToken()
 			_reqOption = reqOptionWithToken()
+			console.log('2', _reqOption)
 			if (!_reqOption.headers.Authorization) {
+				console.log('3', _reqOption)
+
 				redirection()
 			}
 		}
 
 		try {
 			const response = await axios.get(callUrl, _reqOption)
+
 			success(response)
 		} catch (err) {
 			fail(err)
 		} finally {
 			pending_get[reqKey] = false
+			finallyCallback()
 		}
 	}
 

@@ -59,12 +59,12 @@
 		unsubscribe()
 	})
 
-	onMount(() => {
+	onMount(async () => {
 		if ($storeAccessToken) {
 			console.log('auth login success')
 		} else {
 			console.log('auth login faliled')
-			refresh()
+			await refresh()
 		}
 	})
 
@@ -122,10 +122,10 @@
 <div class="layout">
 	<div class="sidebar">
 		<div class="sidebar_logo_box">
-			<img class="sidebar_logo_img" src="/main-logo-128.png" alt="main-logo" />
+			<img class="sidebar_logo_img" src="/imgs/main-logo-128.png" alt="main-logo" />
 			<p>Hardy Dev. Admin App</p>
 			<button style="background-color: transparent; border: none;" on:click={toggleSidebar}>
-				<img src="/icon_s_menu.svg" alt="menu" class="mobile-menu" />
+				<img src="/imgs/icon_s_menu.svg" alt="menu" class="mobile-menu" />
 			</button>
 		</div>
 		<div class="sidebar_menu_box {isSidebarOpen ? 'active' : ''}">
@@ -140,7 +140,7 @@
 							event.key === 'Enter' || event.key === ' ' ? toggleSubmenu(item.id) : null}
 					>
 						<img
-							src="/icon_arrowUp.svg"
+							src="/imgs/icon_arrowUp.svg"
 							alt="arrowUp"
 							class={submenuVisibility[item.id] ? 'rotation' : 'noRotation'}
 						/>
@@ -169,7 +169,7 @@
 			</div>
 			<div class="sidebar_list_box_02">
 				<div class="icon_box">
-					<img src="/icon_dashBoard.svg" alt="dashBoard" />
+					<img src="/imgs/icon_dashBoard.svg" alt="dashBoard" />
 					<a
 						on:click={closeSidebar}
 						href="/admin/dashBoard"
@@ -178,7 +178,7 @@
 					>
 				</div>
 				<div class="icon_box">
-					<img src="/icon_setting.svg" alt="setting" />
+					<img src="/imgs/icon_setting.svg" alt="setting" />
 					<a
 						on:click={closeSidebar}
 						href="/admin/settings"
@@ -186,7 +186,7 @@
 					>
 				</div>
 				<div class="icon_box" tabindex="0" role="button" on:click={closeSidebar}>
-					<img src="/icon_logout.svg" alt="logout" />
+					<img src="/imgs/icon_logout.svg" alt="logout" />
 					<p>로그아웃</p>
 				</div>
 			</div>

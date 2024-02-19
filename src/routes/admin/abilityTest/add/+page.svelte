@@ -122,6 +122,7 @@
 				console.log(res)
 			},
 			(err) => {
+				sweetToast(err, 'error')
 				console.log(err)
 			},
 			null,
@@ -132,7 +133,7 @@
 
 <main>
 	<div class="main_top_box">
-		<img src="/icon_left.svg" alt="icon" />
+		<img src="/imgs/icon_left.svg" alt="icon" />
 		<span>능력고사 테스트 추가</span>
 	</div>
 
@@ -147,7 +148,7 @@
 							alt="이미지"
 						/>
 					{:else}
-						<img src="/icon_add.svg" alt="이미지 추가" />
+						<img src="/imgs/icon_add.svg" alt="이미지 추가" />
 					{/if}
 				</div>
 				<input
@@ -217,28 +218,11 @@
 </main>
 
 <style>
-	.main_top_box {
-		display: flex;
-		align-items: center;
-		margin-bottom: 5rem;
-	}
-	.main_top_box img {
-		margin-right: 10px;
-		width: 1.5rem;
-	}
-	.main_top_box span {
-		font-size: 2.5rem;
-		font-weight: 600;
-		color: var(--main-bg-purple);
-	}
-	.main_box {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
 	.test_info {
 		display: flex;
 		flex-direction: column;
+		align-items: center;
+		width: 100%;
 	}
 	.test_details {
 		display: flex;
@@ -249,10 +233,13 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 300px;
+		width: 100%;
 		height: 300px;
 		background-color: var(--main-bg-lightGray);
 		border-radius: 10px;
+	}
+	.custom_file_upload {
+		width: 100%;
 	}
 	.questions {
 		display: flex;
@@ -330,7 +317,7 @@
 
 	@media (max-width: 768px) {
 		.main_top_box {
-			margin: 2rem 2rem 2rem 2rem;
+			margin: 2rem 0;
 		}
 		.main_top_box img {
 			width: 1rem;

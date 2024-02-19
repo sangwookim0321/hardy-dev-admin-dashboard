@@ -6,6 +6,7 @@
 	--main-bg-dark: #1b1c1d;
 	--main-bg-gray: rgb(61, 61, 61);
 	--main-bg-lightGray: #ccc;
+	--main-bg-lightGray-02: #f2f2f2;
 	--main-bg-purple: #816bff;
 	--main-bg-darkPurple: #6f5cdd;
 	--main-bg-green: #28a745;
@@ -37,29 +38,6 @@ div, textarea, label {
 	font-family: 'Pretendard', sans-serif;
 }
 
-.swal2-popup {
-	font-size: 1.5rem !important; /* 폰트 크기 조정 */
-	width: auto !important; /* 너비 자동 조정 */
-	padding: 1.5rem !important; /* 패딩 조정 */
-}
-
-.swal2-title {
-	font-size: 2rem !important; /* 타이틀 폰트 크기 조정 */
-}
-
-.swal2-content {
-	font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
-}
-
-.swal2-styled.swal2-confirm {
-	padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-	font-size: 1.5rem !important; /* 확인 버튼 폰트 크기 조정 */
-}
-
-.swal2-styled.swal2-cancel {
-	padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
-	font-size: 1.5rem !important; /* 취소 버튼 폰트 크기 조정 */
-}
 
 /* 모바일 기기용 SweetAlert2 스타일 조정 */
 @media (max-width: 768px) {
@@ -88,6 +66,26 @@ div, textarea, label {
 	}
 }
 
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th, td {
+	padding: 2rem;
+	text-align: center;
+}
+
+th {
+	font-size: 1.6rem;
+	background-color: var(--main-bg-lightGray-02);
+}
+
+tr:nth-child(even) {
+	font-size: 1.2rem;
+	border-bottom: 1px solid var(--main-bg-lightGray-02);
+}
+
 /* 스크롤바 전체 스타일 */
 textarea::-webkit-scrollbar {
     width: 6px; /* 스크롤바의 너비 */
@@ -96,15 +94,59 @@ textarea::-webkit-scrollbar {
 
 /* 스크롤바 트랙 (바탕) 스타일 */
 textarea::-webkit-scrollbar-track {
-    background: #f1f1f1; /* 스크롤바 트랙의 배경색 */
+	background: #f1f1f1; /* 스크롤바 트랙의 배경색 */
 }
 
 /* 스크롤바 핸들 (움직이는 부분) 스타일 */
 textarea::-webkit-scrollbar-thumb {
-    background: #888; /* 스크롤바 핸들의 색상 */
+	background: #888; /* 스크롤바 핸들의 색상 */
 }
 
 /* 스크롤바 핸들을 호버할 때 스타일 */
 textarea::-webkit-scrollbar-thumb:hover {
-    background: #555; /* 호버 시 핸들의 색상 */
+	background: #555; /* 호버 시 핸들의 색상 */
+}
+
+.main_top_box {
+	display: flex;
+	align-items: center;
+	margin-bottom: 5rem;
+}
+.main_top_box img {
+	margin-right: 10px;
+	width: 1.5rem;
+}
+.main_top_box span {
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--main-bg-purple);
+}
+.main_box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.swal2-popup {
+	font-size: 1.5rem !important; /* 폰트 크기 조정 */
+	width: auto !important; /* 너비 자동 조정 */
+	padding: 1.5rem !important; /* 패딩 조정 */
+}
+
+.swal2-title {
+	font-size: 2rem !important; /* 타이틀 폰트 크기 조정 */
+}
+
+.swal2-content {
+	font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
+}
+
+.swal2-styled.swal2-confirm {
+	padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
+	font-size: 1.5rem !important; /* 확인 버튼 폰트 크기 조정 */
+}
+
+.swal2-styled.swal2-cancel {
+	padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
+	font-size: 1.5rem !important; /* 취소 버튼 폰트 크기 조정 */
 }

@@ -70,7 +70,7 @@
 <main class="main">
 	<div class="main_box">
 		<div class="main_logo_box">
-			<img class="main_logo_img" src="/main-logo-128.png" alt="main-logo" />
+			<img class="main_logo_img" src="/imgs/main-logo-128.png" alt="main-logo" />
 		</div>
 		<span>Hardy Admin DashBoard</span>
 		<!-- form 태그 추가 -->
