@@ -102,7 +102,7 @@
 			refreshToken: refreshToken
 		}
 
-		httpPost(
+		await httpPost(
 			endPoints.REFRESH_TOKEN,
 			'refresh',
 			data,

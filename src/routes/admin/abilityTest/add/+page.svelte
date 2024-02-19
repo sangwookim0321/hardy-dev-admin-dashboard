@@ -1,28 +1,132 @@
+<!-- 능력고사 테스트 등록 페이지 -->
 <script>
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
 	import { storePath } from '$lib/store/store'
+	import { showToast } from '$lib/util/alerts'
+	import useApi from '$lib/util/api'
+
+	const { httpPostFormData, endPoints } = useApi()
 
 	let currentPath
 
 	onMount(() => {
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
-		console.log($storePath)
 	})
 
-	let items = [{ question_list: [] }]
+	let test = {
+		title: '테스트 타이틀',
+		sub_title: '테스트 서브 타이틀',
+		description: '설명설명',
+		img: '',
+		img_preview: '',
+		questions: [
+			{
+				question_number: 1,
+				question_name: '질문 이름',
+				question_list: ['1.질문', '2.질문'],
+				question_etc: '기타설명설명',
+				answer: 2,
+				score: 10
+			}
+		]
+	}
+
+	function handleFileChange(event) {
+		const file = event.target.files[0]
+		if (file) {
+			let fileReader = new FileReader()
+			fileReader.readAsDataURL(file)
+			fileReader.onload = () => {
+				test.img_preview = fileReader.result
+				test.img = file
+			}
+		}
+	}
 
 	function addQuestion() {
-		items = [...items, { question_list: [] }]
+		test.questions = [
+			...test.questions,
+			{
+				question_number: test.questions.length + 1,
+				question_name: '',
+				question_list: [],
+				question_etc: '',
+				answer: 0,
+				score: 0
+			}
+		]
 	}
 
 	function addOption(index) {
-		items[index].question_list = [...items[index].question_list, '']
+		test.questions[index].question_list = [...test.questions[index].question_list, '']
 	}
 
-	function saveTest() {
-		console.log(items)
+	function sweetToast(title, icon) {
+		showToast({
+			title: title,
+			icon: icon
+		})
+	}
+
+	async function saveTest() {
+		console.log(endPoints.ABILITY_TEST_ADD)
+		if (!test.img) {
+			sweetToast('이미지를 업로드해주세요', 'warning')
+			return
+		}
+		if (!test.title) {
+			sweetToast('제목을 입력해주세요', 'warning')
+			return
+		}
+		if (!test.sub_title) {
+			sweetToast('서브 제목을 입력해주세요', 'warning')
+			return
+		}
+		if (!test.description) {
+			sweetToast('설명을 입력해주세요', 'warning')
+			return
+		}
+
+		for (let i = 0; i < test.questions.length; i++) {
+			if (!test.questions[i].question_name) {
+				sweetToast('질문 이름을 입력해주세요', 'warning')
+				return
+			}
+
+			if (test.questions[i].question_list.length < 2) {
+				sweetToast('옵션을 2개 이상 입력해주세요', 'warning')
+				return
+			}
+
+			if (test.questions[i].answer < 1) {
+				sweetToast('정답을 입력해주세요', 'warning')
+				return
+			}
+		}
+
+		let formData = new FormData()
+		formData.append('title', test.title)
+		formData.append('sub_title', test.sub_title)
+		formData.append('description', test.description)
+		formData.append('img', test.img)
+		formData.append('questions', JSON.stringify(test.questions))
+
+		await httpPostFormData(
+			endPoints.ABILITY_TEST_ADD,
+			'abilityTestAdd',
+			formData,
+			true,
+			(res) => {
+				console.log(res)
+			},
+			(err) => {
+				console.log(err)
+			},
+			null,
+			() => {}
+		)
 	}
 </script>
 
@@ -34,52 +138,75 @@
 
 	<div class="main_box">
 		<div class="test_info">
-			<div class="image_upload">
-				<!-- <input type="file" accept="image/*" /> -->
-				<img src="/icon_add.svg" alt="이미지 추가" />
-				<!-- <img
-						src=""
-						id="preview"
-						alt="img"
-						style="object-fit: cover; margin-top: 6px; width: 200px; height: 200px;"
-					/> -->
-			</div>
+			<label for="file_upload" class="custom_file_upload">
+				<div style="cursor: pointer;" class="image_upload">
+					{#if test.img_preview}
+						<img
+							style="object-fit: cover; width: 300px; height: 300px;"
+							src={test.img_preview}
+							alt="이미지"
+						/>
+					{:else}
+						<img src="/icon_add.svg" alt="이미지 추가" />
+					{/if}
+				</div>
+				<input
+					type="file"
+					id="file_upload"
+					style="display: none;"
+					class="file_upload"
+					on:change={handleFileChange}
+				/>
+			</label>
 			<div class="test_details">
 				<label for="title">제목</label>
-				<input type="text" id="title" class="title" />
+				<input type="text" id="title" class="title" bind:value={test.title} />
 				<label for="sub_title">서브 제목</label>
-				<input type="text" id="sub_title" class="sub_title" />
+				<input type="text" id="sub_title" class="sub_title" bind:value={test.sub_title} />
 				<label for="description">설명</label>
-				<textarea id="description" class="description"></textarea>
+				<textarea id="description" class="description" bind:value={test.description}></textarea>
 			</div>
 		</div>
 
 		<hr />
 
 		<div class="questions">
-			{#each items as item, index}
-				<label for="question_number">{index + 1}번</label>
+			{#each test.questions as question, index}
+				<label for={`question_number_${index}`}>{index + 1}번</label>
 				<div class="question_set">
 					<label for="question_number">질문 번호</label>
-					<input type="number" id="question_number" class="question_number" />
-					<label for="question_name">질문 이름</label>
-					<input type="text" id="question_name" class="question_name" />
-					{#each item.question_list as question, index2}
-						<label for="question_list">{index2 + 1}번 문제</label>
+					<input
+						type="number"
+						id={`question_number_${index}`}
+						class="question_number"
+						bind:value={question.question_number}
+					/>
+					<label for={`question_name_${index}`}>질문 이름</label>
+					<input
+						type="text"
+						id={`question_name_${index}`}
+						class="question_name"
+						bind:value={question.question_name}
+					/>
+					{#each question.question_list as option, index2}
+						<label for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label>
 						<input
 							type="text"
-							id="question_list"
-							placeholder="객관식 리스트"
-							class="question_list"
+							id={`option_${index}_${index2}`}
+							bind:value={question.question_list[index2]}
 						/>
 					{/each}
 					<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
-					<label for="question_etc">기타 문제설명</label>
-					<textarea id="question_etc" class="question_etc"></textarea>
-					<label for="answer">정답</label>
-					<input type="number" id="answer" class="answer" />
-					<label for="score">배점</label>
-					<input type="number" id="score" class="score" />
+					<label for={`question_etc_${index}`}>기타 문제설명</label>
+					<textarea
+						id={`question_etc_${index}`}
+						class="question_etc"
+						bind:value={question.question_etc}
+					></textarea>
+					<label for={`answer_${index}`}>정답</label>
+					<input type="number" id={`answer_${index}`} class="answer" bind:value={question.answer} />
+					<label for={`score_${index}`}>배점</label>
+					<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
 					<hr />
 				</div>
 			{/each}
@@ -155,6 +282,10 @@
 		padding: 0.5rem 0;
 		box-sizing: border-box;
 	}
+	input:focus {
+		border-color: var(--main-bg-purple);
+		outline: none;
+	}
 	textarea {
 		border: none;
 		outline: none;
@@ -164,6 +295,10 @@
 		padding: 0.5rem 0;
 		font-size: 1.5rem;
 	}
+	textarea:focus {
+		border-color: var(--main-bg-purple);
+		outline: none;
+	}
 	button {
 		margin: 1rem 0;
 		padding: 0.5rem 1rem;
@@ -172,6 +307,9 @@
 		background-color: var(--main-bg-lightGray);
 		color: var(--main-bg-white);
 		cursor: pointer;
+	}
+	button:hover {
+		background-color: var(--main-bg-gray);
 	}
 	label {
 		margin: 1rem 0;
@@ -185,6 +323,9 @@
 		background-color: var(--main-bg-purple);
 		color: white;
 		cursor: pointer;
+	}
+	.save_button:hover {
+		background-color: var(--main-bg-darkPurple);
 	}
 
 	@media (max-width: 768px) {

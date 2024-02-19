@@ -152,7 +152,7 @@
 		cursor: pointer;
 	}
 	button:hover {
-		background-color: var(--main-bg-purple);
+		background-color: var(--main-bg-darkPurple);
 	}
 
 	@media (max-width: 768px) {
