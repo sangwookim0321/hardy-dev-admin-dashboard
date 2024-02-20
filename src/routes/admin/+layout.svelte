@@ -382,7 +382,7 @@
 				transform 0.2s ease;
 		}
 		.sidebar_menu_box.active {
-			max-height: 100vh;
+			max-height: 100dvh;
 			transform: scaleY(1);
 		}
 		.sidebar_list_box_01 img {
