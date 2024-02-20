@@ -228,18 +228,16 @@
 		display: flex;
 		flex-direction: column;
 		margin-top: 2rem;
+		width: 50%;
 	}
 	.image_upload {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 100%;
+		width: 300px;
 		height: 300px;
 		background-color: var(--main-bg-lightGray);
 		border-radius: 10px;
-	}
-	.custom_file_upload {
-		width: 100%;
 	}
 	.questions {
 		display: flex;
@@ -339,6 +337,12 @@
 		}
 		.save_button {
 			padding: 1rem 4rem;
+		}
+		.custom_file_upload {
+			width: 100%;
+		}
+		.image_upload {
+			width: 100%;
 		}
 	}
 </style>

@@ -25,6 +25,8 @@
 		"axios": "^1.6.7",
 		"bcrypt": "^5.1.1",
 		"jsonwebtoken": "^9.0.2",
+		"moment": "^2.30.1",
+		"svelte-loading-spinners": "^0.3.4",
 		"sweetalert2": "^11.10.5"
 	}
 }

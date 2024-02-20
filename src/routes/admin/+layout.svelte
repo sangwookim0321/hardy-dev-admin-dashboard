@@ -253,9 +253,11 @@
 		font-size: 1.8rem;
 	}
 	.sidebar_list_box_02 {
+		position: fixed;
 		display: flex;
 		flex-direction: column;
 		margin: 2rem 0;
+		bottom: 0;
 	}
 	.sidebar a {
 		cursor: pointer;
@@ -346,6 +348,7 @@
 			width: 100%;
 			height: auto;
 			padding: 1rem 0;
+			z-index: 9999;
 		}
 		.sidebar_logo_box {
 			flex-direction: row;

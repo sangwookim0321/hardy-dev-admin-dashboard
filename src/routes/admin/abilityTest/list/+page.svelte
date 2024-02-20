@@ -4,23 +4,15 @@
 	import { page } from '$app/stores.js'
 	import { storePath, storeAccessToken } from '$lib/store/store'
 	import { showToast } from '$lib/util/alerts'
+	import { Stretch } from 'svelte-loading-spinners'
+	import { formatDate } from '$lib/util/filter'
 	import useApi from '$lib/util/api'
 
 	const { httpGet, endPoints } = useApi()
 
 	let currentPath
-	let items = [
-		{
-			id: 0,
-			title: '',
-			sub_title: '',
-			description: '',
-			img_url: '',
-			release: false,
-			count: 0,
-			created_at: ''
-		}
-	]
+	let items = []
+	let isLoading = false
 
 	onMount(() => {
 		currentPath = $page.url.pathname
@@ -36,19 +28,23 @@
 	}
 
 	function getItem() {
+		isLoading = true
 		httpGet(
 			endPoints.ABILITY_TEST_LIST,
 			'AbilityTestList',
 			true,
 			(res) => {
-				console.log(res.data)
+				items = res.data.data
+				console.log(res.data.data)
 			},
 			(err) => {
+				sweetToast(err, 'error')
 				console.log(err)
 			},
 			() => {},
 			() => {
-				console.log('finaly')
+				isLoading = false
+				console.log('final')
 			}
 		)
 	}
@@ -86,13 +82,14 @@
 				</div>
 			</div>
 		</div>
+		<!-- 생성일순, 조회수 순, 공개/비공개 인것만, 검색어 -->
 		<div class="group_box_02">
 			<div class="group_box_02_child">
 				<div>SUB ITEM</div>
 				<div>SUB ITEM</div>
 				<div>SUB ITEM</div>
+				<div>SUB ITEM</div>
 			</div>
-			<!-- // id, title, subtitle, release, count, created_at, 상세보기 -->
 			<table>
 				<th>ID</th>
 				<th>테스트 이름</th>
@@ -102,16 +99,24 @@
 				<th>생성일</th>
 				<th>상세</th>
 
-				<tr>
-					<td>ID 값</td>
-					<td>타이틀 값</td>
-					<td>서브 타이틀 값</td>
-					<td>공개여부 값</td>
-					<td>조회수 값</td>
-					<td>생성일 값</td>
-					<td>
-						<button>보기</button>
-					</td>
+				<tr style="position: relative;">
+					{#if isLoading}
+						<div class="loading-container">
+							<Stretch size="60" color="var(--main-bg-purple)" />
+						</div>
+					{:else}
+						{#each items as item, index}
+							<td>{item.id}</td>
+							<td>{item.title}</td>
+							<td>{item.sub_title}</td>
+							<td>{item.release ? '공개' : '비공개'}</td>
+							<td>{item.count}</td>
+							<td>{formatDate(item.created_at)}</td>
+							<td>
+								<button>보기</button>
+							</td>
+						{/each}
+					{/if}
 				</tr>
 			</table>
 		</div>
@@ -196,5 +201,10 @@
 		.child_sub {
 			font-size: 1.2rem;
 		}
+	}
+	.loading-container {
+		position: absolute;
+		left: 50%;
+		padding: 5rem 0;
 	}
 </style>

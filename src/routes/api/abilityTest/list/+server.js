@@ -10,7 +10,7 @@ export async function GET({ request }) {
 		}
 
 		return json(
-			{ message: '테스트 목록을 성공적으로 조회했습니다.', status: 'success', response: data },
+			{ message: '테스트 목록을 성공적으로 조회했습니다.', status: 'success', data: data },
 			{ status: 200 }
 		)
 	} catch (err) {
