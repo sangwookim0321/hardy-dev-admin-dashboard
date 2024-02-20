@@ -119,7 +119,24 @@
 			formData,
 			true,
 			(res) => {
-				console.log(res)
+				sweetToast('능력고사 테스트 등록 성공!', 'success')
+				test = {
+					title: '',
+					sub_title: '',
+					description: '',
+					img: '',
+					img_preview: '',
+					questions: [
+						{
+							question_number: 1,
+							question_name: '',
+							question_list: ['', ''],
+							question_etc: '',
+							answer: 0,
+							score: 0
+						}
+					]
+				}
 			},
 			(err) => {
 				sweetToast(err, 'error')

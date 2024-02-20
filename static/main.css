@@ -89,7 +89,7 @@ th {
 	background-color: var(--main-bg-lightGray-02);
 }
 
-tr:nth-child(even) {
+tr {
 	font-size: 1.4rem;
 	border-bottom: 1px solid var(--main-bg-lightGray-02);
 }
@@ -157,4 +157,11 @@ textarea::-webkit-scrollbar-thumb:hover {
 .swal2-styled.swal2-cancel {
 	padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
 	font-size: 1.5rem !important; /* 취소 버튼 폰트 크기 조정 */
+}
+
+.light-pagination-nav .pagination-nav {
+    box-shadow: none !important;
+}
+span {
+	font-size: 1.5rem;
 }

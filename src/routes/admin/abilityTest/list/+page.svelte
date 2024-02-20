@@ -6,13 +6,24 @@
 	import { showToast } from '$lib/util/alerts'
 	import { Stretch } from 'svelte-loading-spinners'
 	import { formatDate } from '$lib/util/filter'
+	import { paginate, LightPaginationNav } from 'svelte-paginate'
 	import useApi from '$lib/util/api'
 
 	const { httpGet, endPoints } = useApi()
 
 	let currentPath
 	let items = []
+	let currentPage = 1
+	let pageSize = 4
+	$: paginatedItems = paginate({ items, pageSize, currentPage })
 	let isLoading = false
+	let selectedCreationDate = '' // 생성일
+	let selectedViews = '' // 조회수
+	let selectedDisclosure = '' // 공개여부
+	let creationDateOptions = ['최신순', '오래된순']
+	let viewsDateOptions = ['높은순', '낮은순']
+	let disclosureDateOptions = ['공개', '비공개']
+	let searchKeyword = ''
 
 	onMount(() => {
 		currentPath = $page.url.pathname
@@ -85,27 +96,54 @@
 		<!-- 생성일순, 조회수 순, 공개/비공개 인것만, 검색어 -->
 		<div class="group_box_02">
 			<div class="group_box_02_child">
-				<div>SUB ITEM</div>
-				<div>SUB ITEM</div>
-				<div>SUB ITEM</div>
-				<div>SUB ITEM</div>
+				<div class="select_div">
+					<select bind:value={selectedCreationDate}>
+						<option value="">선택</option>
+						{#each creationDateOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+				</div>
+				<div class="select_div">
+					<select bind:value={selectedViews}>
+						<option value="">선택</option>
+						{#each viewsDateOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+				</div>
+				<div class="select_div">
+					<select bind:value={selectedDisclosure}>
+						<option value="">선택</option>
+						{#each disclosureDateOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+				</div>
+				<div class="search_box">
+					<img src="/imgs/icon_search.svg" alt="검색 아이콘" />
+					<input bind:value={searchKeyword} type="text" placeholder="ID/이름으로 검색하기" />
+				</div>
 			</div>
-			<!-- <table>
+			<table>
 				<th>ID</th>
 				<th>테스트 이름</th>
 				<th>서브 타이틀</th>
 				<th>공개여부</th>
 				<th>조회수</th>
-				<th>생성일</th>
+				<th style="width: 20rem">생성일</th>
 				<th>상세</th>
 
-				<tr style="position: relative;">
-					{#if isLoading}
-						<div class="loading-container">
-							<Stretch size="60" color="var(--main-bg-purple)" />
-						</div>
-					{:else}
-						{#each items as item, index}
+				{#each items as item, index}
+					<tr style="position: relative;">
+						{#if isLoading}
+							<div class="loading-container">
+								<Stretch size="60" color="var(--main-bg-purple)" />
+							</div>
+						{:else}
 							<td>{item.id}</td>
 							<td>{item.title}</td>
 							<td>{item.sub_title}</td>
@@ -115,10 +153,24 @@
 							<td>
 								<button>보기</button>
 							</td>
-						{/each}
-					{/if}
-				</tr>
-			</table> -->
+						{/if}
+					</tr>
+				{/each}
+			</table>
+			{#if !items.length >= 1 && !isLoading}
+				<div class="noData_box">
+					<span>조회된 데이터가 없습니다.</span>
+				</div>
+			{/if}
+			<LightPaginationNav
+				class="custom-pagination-nav"
+				totalItems={items.length}
+				{pageSize}
+				{currentPage}
+				limit={1}
+				showStepOptions={true}
+				on:setPage={(e) => (currentPage = e.detail.page)}
+			/>
 		</div>
 	</div>
 </main>
@@ -164,11 +216,49 @@
 		display: flex;
 		flex-direction: row;
 		justify-content: flex-start;
+		align-items: center;
 		width: 100%;
 		margin-bottom: 20px;
 	}
 	.group_box_02_child div {
 		margin-right: 2rem;
+	}
+	.noData_box {
+		width: 100%;
+		margin: 6rem 0;
+		text-align: center;
+	}
+	.noData_box span {
+		font-size: 1.6rem;
+	}
+	.search_box {
+		position: relative;
+	}
+	.search_box img {
+		position: absolute;
+		right: 0rem;
+		bottom: 0.6rem;
+		width: 1.6rem;
+		cursor: pointer;
+	}
+	.search_box input {
+		border: 1px solid var(--main-bg-lightGray-02);
+		border-radius: 5px;
+		padding: 0.5rem 4rem 0.5rem 1rem;
+		width: 80%;
+		margin: 0 auto;
+	}
+	.search_box input:focus {
+		outline: 1px solid var(--main-bg-lightGray);
+	}
+	.select_div {
+		position: relative;
+	}
+	.select_div img {
+		position: absolute;
+		top: 25%;
+		right: 0.5rem;
+		width: 0.8rem;
 	}
 	button {
 		padding: 0.5rem 1rem;
@@ -180,6 +270,22 @@
 	}
 	button:hover {
 		background-color: var(--main-bg-gray);
+	}
+	select {
+		appearance: none;
+		padding: 0.5rem 2rem;
+		border: 1px solid var(--main-bg-lightGray-02);
+		background-color: var(--main-bg-white);
+		cursor: pointer;
+	}
+	select:focus {
+		outline: none;
+		border-color: var(--main-bg-lightGray);
+	}
+	select option {
+		border: none;
+		outline: none;
+		background-color: var(--main-bg-lightGray-02);
 	}
 
 	@media (max-width: 768px) {
