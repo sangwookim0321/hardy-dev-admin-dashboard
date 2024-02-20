@@ -29,6 +29,10 @@ html {
 	font-size: 10px;
 }
 
+.main_top_box {
+	position: relative;
+}
+
 button,
 span,
 input,
@@ -38,40 +42,8 @@ div, textarea, label {
 	font-family: 'Pretendard', sans-serif;
 }
 
-
-/* 모바일 기기용 SweetAlert2 스타일 조정 */
-@media (max-width: 768px) {
-	.swal2-popup {
-		font-size: 1.5rem !important; /* 폰트 크기 조정 */
-		width: auto !important; /* 너비 자동 조정 */
-		padding: 1.5rem !important; /* 패딩 조정 */
-	}
-
-	.swal2-title {
-		font-size: 1.5rem !important; /* 타이틀 폰트 크기 조정 */
-	}
-
-	.swal2-content {
-		font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
-	}
-
-	.swal2-styled.swal2-confirm {
-		padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-		font-size: 1.2rem !important; /* 확인 버튼 폰트 크기 조정 */
-	}
-
-	.swal2-styled.swal2-cancel {
-		padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
-		font-size: 1.2rem !important; /* 취소 버튼 폰트 크기 조정 */
-	}
-	th, td {
-        padding: 1rem; /* 모바일 화면에서 셀의 패딩 줄임 */
-        font-size: 1rem; /* 모바일 화면에서 폰트 크기 줄임 */
-    }
-
-    th {
-        font-size: 1.2rem; /* 모바일 화면에서 테이블 헤더의 폰트 크기 조정 */
-    }
+span {
+	font-size: 1.5rem;
 }
 
 table {
@@ -162,6 +134,48 @@ textarea::-webkit-scrollbar-thumb:hover {
 .light-pagination-nav .pagination-nav {
     box-shadow: none !important;
 }
-span {
-	font-size: 1.5rem;
+
+/* 모바일 기기용 SweetAlert2 스타일 조정 */
+@media (max-width: 768px) {
+	.swal2-popup {
+		font-size: 1.5rem !important; /* 폰트 크기 조정 */
+		width: auto !important; /* 너비 자동 조정 */
+		padding: 1.5rem !important; /* 패딩 조정 */
+	}
+
+	.swal2-title {
+		font-size: 1.5rem !important; /* 타이틀 폰트 크기 조정 */
+	}
+
+	.swal2-content {
+		font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
+	}
+
+	.swal2-styled.swal2-confirm {
+		padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
+		font-size: 1.2rem !important; /* 확인 버튼 폰트 크기 조정 */
+	}
+
+	.swal2-styled.swal2-cancel {
+		padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
+		font-size: 1.2rem !important; /* 취소 버튼 폰트 크기 조정 */
+	}
+	.table_box {
+		overflow-x: scroll;
+	}
+	th {
+		font-size: 1rem; /* 모바일 화면에서 테이블 헤더의 폰트 크기 조정 */
+		white-space: nowrap; /* 텍스트가 일자로 가로 정렬되도록 설정 */
+	}
+	td {
+		white-space: nowrap;
+		padding: 1rem; /* 모바일 화면에서 셀의 패딩 줄임 */
+		font-size: 1rem; /* 모바일 화면에서 폰트 크기 줄임 */
+	}
+	tr {
+	}
+	td button {
+		font-size: 0.9rem;
+		padding: 0.5rem 1rem;
+	}
 }

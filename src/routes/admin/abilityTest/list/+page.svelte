@@ -4,7 +4,7 @@
 	import { page } from '$app/stores.js'
 	import { storePath, storeAccessToken } from '$lib/store/store'
 	import { showToast } from '$lib/util/alerts'
-	import { Stretch } from 'svelte-loading-spinners'
+	import { BarLoader } from 'svelte-loading-spinners'
 	import { formatDate } from '$lib/util/filter'
 	import { paginate, LightPaginationNav } from 'svelte-paginate'
 	import useApi from '$lib/util/api'
@@ -96,54 +96,52 @@
 		<!-- 생성일순, 조회수 순, 공개/비공개 인것만, 검색어 -->
 		<div class="group_box_02">
 			<div class="group_box_02_child">
-				<div class="select_div">
-					<select bind:value={selectedCreationDate}>
-						<option value="">선택</option>
-						{#each creationDateOptions as option}
-							<option value={option}>{option}</option>
-						{/each}
-					</select>
-					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
-				</div>
-				<div class="select_div">
-					<select bind:value={selectedViews}>
-						<option value="">선택</option>
-						{#each viewsDateOptions as option}
-							<option value={option}>{option}</option>
-						{/each}
-					</select>
-					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
-				</div>
-				<div class="select_div">
-					<select bind:value={selectedDisclosure}>
-						<option value="">선택</option>
-						{#each disclosureDateOptions as option}
-							<option value={option}>{option}</option>
-						{/each}
-					</select>
-					<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+				<div class="group_box_02_select">
+					<div class="select_div">
+						<select bind:value={selectedCreationDate}>
+							<option value="">선택</option>
+							{#each creationDateOptions as option}
+								<option value={option}>{option}</option>
+							{/each}
+						</select>
+						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+					</div>
+					<div class="select_div">
+						<select bind:value={selectedViews}>
+							<option value="">선택</option>
+							{#each viewsDateOptions as option}
+								<option value={option}>{option}</option>
+							{/each}
+						</select>
+						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+					</div>
+					<div class="select_div">
+						<select bind:value={selectedDisclosure}>
+							<option value="">선택</option>
+							{#each disclosureDateOptions as option}
+								<option value={option}>{option}</option>
+							{/each}
+						</select>
+						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+					</div>
 				</div>
 				<div class="search_box">
 					<img src="/imgs/icon_search.svg" alt="검색 아이콘" />
 					<input bind:value={searchKeyword} type="text" placeholder="ID/이름으로 검색하기" />
 				</div>
 			</div>
-			<table>
-				<th>ID</th>
-				<th>테스트 이름</th>
-				<th>서브 타이틀</th>
-				<th>공개여부</th>
-				<th>조회수</th>
-				<th style="width: 20rem">생성일</th>
-				<th>상세</th>
+			<div class="table_box">
+				<table style="position: relative;">
+					<th>ID</th>
+					<th>테스트 이름</th>
+					<th>서브 타이틀</th>
+					<th>공개여부</th>
+					<th>조회수</th>
+					<th style="width: 20rem">생성일</th>
+					<th>상세</th>
 
-				{#each items as item, index}
-					<tr style="position: relative;">
-						{#if isLoading}
-							<div class="loading-container">
-								<Stretch size="60" color="var(--main-bg-purple)" />
-							</div>
-						{:else}
+					{#each items as item, index}
+						<tr>
 							<td>{item.id}</td>
 							<td>{item.title}</td>
 							<td>{item.sub_title}</td>
@@ -153,10 +151,10 @@
 							<td>
 								<button>보기</button>
 							</td>
-						{/if}
-					</tr>
-				{/each}
-			</table>
+						</tr>
+					{/each}
+				</table>
+			</div>
 			{#if !items.length >= 1 && !isLoading}
 				<div class="noData_box">
 					<span>조회된 데이터가 없습니다.</span>
@@ -222,6 +220,9 @@
 	}
 	.group_box_02_child div {
 		margin-right: 2rem;
+	}
+	.group_box_02_select {
+		display: flex;
 	}
 	.noData_box {
 		width: 100%;
@@ -307,10 +308,34 @@
 		.child_sub {
 			font-size: 1.2rem;
 		}
+		.group_box_02_select {
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+			margin-bottom: 2rem;
+		}
+		.group_box_02_child {
+			width: 100%;
+			flex-direction: column;
+			align-items: flex-start;
+		}
+		.group_box_02_child div {
+			margin-right: 0;
+		}
+		.search_box {
+			display: flex;
+			justify-content: center;
+			width: 100%;
+		}
+		.search_box input {
+			width: 90%;
+		}
+		.search_box img {
+			right: 1rem;
+		}
 	}
 	.loading-container {
 		position: absolute;
-		left: 50%;
-		padding: 5rem 0;
+		top: 12%;
 	}
 </style>

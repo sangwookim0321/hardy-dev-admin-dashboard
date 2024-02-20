@@ -19,8 +19,8 @@
 			id: 'abilityTest',
 			title: '능력고사 테스트',
 			submenu: [
-				{ path: '/admin/abilityTest/add', label: '추가' },
-				{ path: '/admin/abilityTest/modify', label: '수정' },
+				{ path: '/admin/abilityTest/add', label: '등록' },
+				// { path: '/admin/abilityTest/modify', label: '수정' },
 				{ path: '/admin/abilityTest/list', label: '목록' }
 			]
 		},
@@ -28,8 +28,8 @@
 			id: 'mbtiTest',
 			title: 'MBTI 테스트',
 			submenu: [
-				{ path: '/admin/mbtiTest/add', label: '추가' },
-				{ path: '/admin/mbtiTest/modify', label: '수정' },
+				{ path: '/admin/mbtiTest/add', label: '등록' },
+				// { path: '/admin/mbtiTest/modify', label: '수정' },
 				{ path: '/admin/mbtiTest/list', label: '목록' }
 			]
 		}
