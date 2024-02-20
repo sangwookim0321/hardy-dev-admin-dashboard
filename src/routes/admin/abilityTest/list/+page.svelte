@@ -90,40 +90,45 @@
 				<div>SUB ITEM</div>
 				<div>SUB ITEM</div>
 			</div>
-			<table>
-				<th>ID</th>
-				<th>테스트 이름</th>
-				<th>서브 타이틀</th>
-				<th>공개여부</th>
-				<th>조회수</th>
-				<th>생성일</th>
-				<th>상세</th>
+			<div class="table_container">
+				<table>
+					<th>ID</th>
+					<th>테스트 이름</th>
+					<th>서브 타이틀</th>
+					<th>공개여부</th>
+					<th>조회수</th>
+					<th>생성일</th>
+					<th>상세</th>
 
-				<tr style="position: relative;">
-					{#if isLoading}
-						<div class="loading-container">
-							<Stretch size="60" color="var(--main-bg-purple)" />
-						</div>
-					{:else}
-						{#each items as item, index}
-							<td>{item.id}</td>
-							<td>{item.title}</td>
-							<td>{item.sub_title}</td>
-							<td>{item.release ? '공개' : '비공개'}</td>
-							<td>{item.count}</td>
-							<td>{formatDate(item.created_at)}</td>
-							<td>
-								<button>보기</button>
-							</td>
-						{/each}
-					{/if}
-				</tr>
-			</table>
+					<tr style="position: relative;">
+						{#if isLoading}
+							<div class="loading-container">
+								<Stretch size="60" color="var(--main-bg-purple)" />
+							</div>
+						{:else}
+							{#each items as item, index}
+								<td>{item.id}</td>
+								<td>{item.title}</td>
+								<td>{item.sub_title}</td>
+								<td>{item.release ? '공개' : '비공개'}</td>
+								<td>{item.count}</td>
+								<td>{formatDate(item.created_at)}</td>
+								<td>
+									<button>보기</button>
+								</td>
+							{/each}
+						{/if}
+					</tr>
+				</table>
+			</div>
 		</div>
 	</div>
 </main>
 
 <style>
+	.table_container {
+		overflow-x: auto; /* 가로 스크롤 허용 */
+	}
 	.group_box_01 {
 		display: flex;
 		width: 100%;

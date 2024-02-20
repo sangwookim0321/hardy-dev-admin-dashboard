@@ -64,6 +64,14 @@ div, textarea, label {
 		padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
 		font-size: 1.2rem !important; /* 취소 버튼 폰트 크기 조정 */
 	}
+	th, td {
+        padding: 1rem; /* 모바일 화면에서 셀의 패딩 줄임 */
+        font-size: 1rem; /* 모바일 화면에서 폰트 크기 줄임 */
+    }
+
+    th {
+        font-size: 1.2rem; /* 모바일 화면에서 테이블 헤더의 폰트 크기 조정 */
+    }
 }
 
 table {
