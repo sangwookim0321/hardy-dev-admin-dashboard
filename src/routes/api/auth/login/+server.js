@@ -12,13 +12,13 @@ export async function POST({ request }) {
 		const user = result.rows[0]
 
 		if (!user) {
-			return json({ error: '사용자를 찾을 수 없습니다.' }, { status: 401 })
+			throw { status: 404, message: '사용자를 찾을 수 없습니다.' }
 		}
 
 		const match = await bcrypt.compare(password, user.password)
 
 		if (!match) {
-			return json({ error: '비밀번호가 일치하지 않습니다.' }, { status: 401 })
+			throw { status: 400, message: '비밀번호가 일치하지 않습니다.' }
 		}
 
 		const accessToken = jwt.sign(
@@ -37,11 +37,17 @@ export async function POST({ request }) {
 		)
 
 		return json(
-			{ accessToken: accessToken, refreshToken: refreshToken, message: 'success' },
+			{ accessToken: accessToken, refreshToken: refreshToken, message: '로그인 성공', status: 200 },
 			{ status: 200 }
 		)
 	} catch (err) {
 		console.log(err)
-		return json({ error: '서버 에러' }, { status: 500 })
+		return json(
+			{
+				message: `${err.message}`,
+				status: err.status || 400
+			},
+			{ status: err.status || 500 }
+		)
 	}
 }

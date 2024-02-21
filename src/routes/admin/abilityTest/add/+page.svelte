@@ -6,7 +6,7 @@
 	import { showToast } from '$lib/util/alerts'
 	import useApi from '$lib/util/api'
 
-	const { httpPostFormData, endPoints } = useApi()
+	const { httpPostFormData, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
@@ -139,8 +139,17 @@
 				}
 			},
 			(err) => {
-				sweetToast(err, 'error')
 				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
 			},
 			null,
 			() => {}

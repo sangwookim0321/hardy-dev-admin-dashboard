@@ -4,10 +4,9 @@
 	import { browser } from '$app/environment'
 	import { goto } from '$app/navigation'
 	import { showToast } from '$lib/util/alerts'
-	import { storeAccessToken } from '$lib/store/store'
 	import useApi from '$lib/util/api'
 
-	const { httpPost, endPoints } = useApi()
+	const { httpPost, endPoints, statusHandler } = useApi()
 
 	let email = 'pointjumpit@gmail.com'
 	let password = '!als970321!'
@@ -33,16 +32,25 @@
 			data,
 			false,
 			async (res) => {
-				document.cookie = `refreshToken=${res.data.refreshToken}; path=/; max-age=86400;`
-				storeAccessToken.set(res.data.accessToken)
-				console.log($storeAccessToken)
+				sessionStorage.setItem('accessToken', res.data.accessToken)
+				sessionStorage.setItem('refreshToken', res.data.refreshToken)
 
 				await goto('/admin/dashBoard')
 				sweetToast('로그인 되었습니다!', 'success')
 				console.log(res)
 			},
 			(err) => {
-				sweetToast(err.response.data.error, 'error')
+				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
 			},
 			null,
 			() => {

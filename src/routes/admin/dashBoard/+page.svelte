@@ -9,7 +9,6 @@
 	onMount(() => {
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
-		console.log($storePath)
 	})
 </script>
 

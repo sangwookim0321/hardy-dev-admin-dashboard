@@ -172,8 +172,6 @@ textarea::-webkit-scrollbar-thumb:hover {
 		padding: 1rem; /* 모바일 화면에서 셀의 패딩 줄임 */
 		font-size: 1rem; /* 모바일 화면에서 폰트 크기 줄임 */
 	}
-	tr {
-	}
 	td button {
 		font-size: 0.9rem;
 		padding: 0.5rem 1rem;

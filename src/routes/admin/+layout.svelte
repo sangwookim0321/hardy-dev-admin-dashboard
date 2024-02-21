@@ -2,11 +2,10 @@
 	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { showToast } from '$lib/util/alerts'
-	import useApi from '$lib/util/api'
-	import { storeAccessToken } from '$lib/store/store'
 	import { storePath } from '$lib/store/store'
+	import useApi from '$lib/util/api'
 
-	const { httpPost, endPoints } = useApi()
+	const { httpPost, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
@@ -60,12 +59,7 @@
 	})
 
 	onMount(async () => {
-		if ($storeAccessToken) {
-			console.log('auth login success')
-		} else {
-			console.log('auth login faliled')
-			await refresh()
-		}
+		await refresh()
 	})
 
 	function sweetToast(title, icon) {
@@ -75,26 +69,18 @@
 		})
 	}
 
-	function getCookie(name) {
-		let cookies = document.cookie.split(';')
-
-		for (let i = 0; i < cookies.length; i++) {
-			let cookie = cookies[i].trim()
-
-			if (cookie.startsWith(name + '=')) {
-				return decodeURIComponent(cookie.substring(name.length + 1))
-			}
-		}
-
-		return null // 찾는 쿠키가 없을 경우 null 반환
-	}
-
 	async function refresh() {
-		let refreshToken = getCookie('refreshToken')
+		let refreshToken = sessionStorage.getItem('refreshToken')
+		let accessToken = sessionStorage.getItem('accessToken')
 
+		if (!accessToken) {
+			await goto('/')
+			sweetToast('인증 토큰이 없습니다.', 'error')
+			return
+		}
 		if (!refreshToken) {
 			await goto('/')
-			sweetToast('갱신 토큰이 없습니다.', 'error')
+			sweetToast('리프레시 토큰이 없습니다.', 'error')
 			return
 		}
 
@@ -108,10 +94,20 @@
 			data,
 			false,
 			(res) => {
-				storeAccessToken.set(res.data.accessToken)
+				sessionStorage.setItem('accessToken', res.data.accessToken)
 			},
 			(err) => {
-				showToast(err.response.data.error, 'error')
+				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
 			},
 			null,
 			() => {}

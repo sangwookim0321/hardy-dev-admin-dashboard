@@ -1,6 +1,12 @@
 import axios from 'axios'
-import { storeAccessToken } from '../store/store'
-import { get } from 'svelte/store'
+import { showToast } from '$lib/util/alerts'
+
+function sweetToast(title, icon) {
+	showToast({
+		title: title,
+		icon: icon
+	})
+}
 
 const useApi = () => {
 	let pending_get = {}
@@ -17,7 +23,7 @@ const useApi = () => {
 		}
 	}
 	const reqOptionWithToken = () => {
-		const token = get(storeAccessToken)
+		const token = sessionStorage.getItem('accessToken')
 		return {
 			headers: {
 				'Content-Type': 'application/json',
@@ -36,7 +42,7 @@ const useApi = () => {
 		}
 	}
 	const reqOptionWithTokenFormData = () => {
-		const token = get(storeAccessToken)
+		const token = sessionStorage.getItem('accessToken')
 		return {
 			headers: {
 				'Content-Type': 'multipart/form-data',
@@ -46,55 +52,14 @@ const useApi = () => {
 		}
 	}
 
-	const waitForToken = async () => {
-		let token = get(storeAccessToken)
-		if (!token) {
-			token = await refresh()
+	const statusHandler = (status, noRedirection, isRedirection) => {
+		if (status === 400) {
+			// 400 코드는 잘못된 요청이므로 에러 메시지만 표시
+			noRedirection()
+		} else {
+			// 401, 403 코드는 토큰 만료 또는 권한 없음이므로 로그인 페이지로 이동
+			isRedirection()
 		}
-		return token
-	}
-
-	function getCookie(name) {
-		let cookies = document.cookie.split(';')
-
-		for (let i = 0; i < cookies.length; i++) {
-			let cookie = cookies[i].trim()
-
-			if (cookie.startsWith(name + '=')) {
-				return decodeURIComponent(cookie.substring(name.length + 1))
-			}
-		}
-
-		return null // 찾는 쿠키가 없을 경우 null 반환
-	}
-
-	async function refresh() {
-		let refreshToken = getCookie('refreshToken')
-
-		if (!refreshToken) {
-			await goto('/')
-			sweetToast('갱신 토큰이 없습니다.', 'error')
-			return
-		}
-
-		const data = {
-			refreshToken: refreshToken
-		}
-
-		await httpPost(
-			endPoints.REFRESH_TOKEN,
-			'refresh',
-			data,
-			false,
-			(res) => {
-				storeAccessToken.set(res.data.accessToken)
-			},
-			(err) => {
-				showToast(err.response.data.error, 'error')
-			},
-			null,
-			() => {}
-		)
 	}
 
 	const endPoints = {
@@ -125,12 +90,8 @@ const useApi = () => {
 		let _reqOption = reqOption()
 
 		if (useToken) {
-			const token = await waitForToken()
 			_reqOption = reqOptionWithToken()
-			console.log('2', _reqOption)
 			if (!_reqOption.headers.Authorization) {
-				console.log('3', _reqOption)
-
 				redirection()
 			}
 		}
@@ -140,7 +101,7 @@ const useApi = () => {
 
 			success(response)
 		} catch (err) {
-			fail(err)
+			fail(err.response.data)
 		} finally {
 			pending_get[reqKey] = false
 			finallyCallback()
@@ -178,7 +139,7 @@ const useApi = () => {
 			const response = await axios.post(callUrl, postData, _reqOption)
 			success(response)
 		} catch (err) {
-			fail(err)
+			fail(err.response.data)
 		} finally {
 			pending_post[reqKey] = false
 			finallyCallback() // 최종 작업 완료 후 콜백
@@ -279,7 +240,7 @@ const useApi = () => {
 		}
 	}
 
-	return { httpGet, httpPost, httpPostFormData, httpPut, httpDelete, endPoints }
+	return { httpGet, httpPost, httpPostFormData, httpPut, httpDelete, endPoints, statusHandler }
 }
 
 export default useApi

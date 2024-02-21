@@ -2,21 +2,21 @@
 <script>
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
-	import { storePath, storeAccessToken } from '$lib/store/store'
+	import { storePath, storeLoadingState } from '$lib/store/store'
 	import { showToast } from '$lib/util/alerts'
-	import { BarLoader } from 'svelte-loading-spinners'
 	import { formatDate } from '$lib/util/filter'
 	import { paginate, LightPaginationNav } from 'svelte-paginate'
+	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 	import useApi from '$lib/util/api'
 
-	const { httpGet, endPoints } = useApi()
+	const { httpGet, endPoints, statusHandler } = useApi()
 
 	let currentPath
 	let items = []
 	let currentPage = 1
-	let pageSize = 4
+	let pageSize = 5
+	let totalItems = 0
 	$: paginatedItems = paginate({ items, pageSize, currentPage })
-	let isLoading = false
 	let selectedCreationDate = '' // 생성일
 	let selectedViews = '' // 조회수
 	let selectedDisclosure = '' // 공개여부
@@ -28,6 +28,7 @@
 	onMount(() => {
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
+		storeLoadingState.set(true)
 		getItem()
 	})
 
@@ -39,139 +40,170 @@
 	}
 
 	function getItem() {
-		isLoading = true
+		// storeLoadingState.set(true)
+
 		httpGet(
-			endPoints.ABILITY_TEST_LIST,
+			`${endPoints.ABILITY_TEST_LIST}/?creation_date=${selectedCreationDate}&views=${selectedViews}&disclosure=${selectedDisclosure}&search=${searchKeyword}&page=${currentPage}&limit=${pageSize}`,
 			'AbilityTestList',
 			true,
 			(res) => {
+				console.log(res.data)
 				items = res.data.data
-				console.log(res.data.data)
+				totalItems = res.data.total
 			},
 			(err) => {
-				sweetToast(err, 'error')
 				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
 			},
 			() => {},
 			() => {
-				isLoading = false
-				console.log('final')
+				storeLoadingState.set(false)
 			}
 		)
 	}
+
+	function handleKeydown(event) {
+		if (event.key === 'Enter') {
+			getItem()
+		}
+	}
 </script>
 
-<main>
-	<div class="main_top_box">
-		<img src="/imgs/icon_left.svg" alt="icon" />
-		<span>능력고사 테스트 목록</span>
-	</div>
-	<div class="main_box">
-		<div class="group_box_01">
-			<div class="group_box_01_child">
-				<div>
-					<span class="child_title">등록된 테스트 갯수</span>
-				</div>
-				<div>
-					<span class="child_sub">12개</span>
-				</div>
-			</div>
-			<div class="group_box_01_child">
-				<div>
-					<span class="child_title">공개/비공개</span>
-				</div>
-				<div>
-					<span class="child_sub">10개 / 2개</span>
-				</div>
-			</div>
-			<div class="group_box_01_child">
-				<div>
-					<span class="child_title">총 조회수</span>
-				</div>
-				<div>
-					<span class="child_sub">12,232회</span>
-				</div>
-			</div>
+{#if $storeLoadingState}
+	<LoadingSpinner />
+{:else}
+	<main>
+		<div class="main_top_box">
+			<img src="/imgs/icon_left.svg" alt="icon" />
+			<span>능력고사 테스트 목록</span>
 		</div>
-		<!-- 생성일순, 조회수 순, 공개/비공개 인것만, 검색어 -->
-		<div class="group_box_02">
-			<div class="group_box_02_child">
-				<div class="group_box_02_select">
-					<div class="select_div">
-						<select bind:value={selectedCreationDate}>
-							<option value="">선택</option>
-							{#each creationDateOptions as option}
-								<option value={option}>{option}</option>
-							{/each}
-						</select>
-						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+		<div class="main_box">
+			<div class="group_box_01">
+				<div class="group_box_01_child">
+					<div>
+						<span class="child_title">등록된 테스트 갯수</span>
 					</div>
-					<div class="select_div">
-						<select bind:value={selectedViews}>
-							<option value="">선택</option>
-							{#each viewsDateOptions as option}
-								<option value={option}>{option}</option>
-							{/each}
-						</select>
-						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
-					</div>
-					<div class="select_div">
-						<select bind:value={selectedDisclosure}>
-							<option value="">선택</option>
-							{#each disclosureDateOptions as option}
-								<option value={option}>{option}</option>
-							{/each}
-						</select>
-						<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+					<div>
+						<span class="child_sub">12개</span>
 					</div>
 				</div>
-				<div class="search_box">
-					<img src="/imgs/icon_search.svg" alt="검색 아이콘" />
-					<input bind:value={searchKeyword} type="text" placeholder="ID/이름으로 검색하기" />
+				<div class="group_box_01_child">
+					<div>
+						<span class="child_title">공개/비공개</span>
+					</div>
+					<div>
+						<span class="child_sub">10개 / 2개</span>
+					</div>
+				</div>
+				<div class="group_box_01_child">
+					<div>
+						<span class="child_title">총 조회수</span>
+					</div>
+					<div>
+						<span class="child_sub">12,232회</span>
+					</div>
 				</div>
 			</div>
-			<div class="table_box">
-				<table style="position: relative;">
-					<th>ID</th>
-					<th>테스트 이름</th>
-					<th>서브 타이틀</th>
-					<th>공개여부</th>
-					<th>조회수</th>
-					<th style="width: 20rem">생성일</th>
-					<th>상세</th>
 
-					{#each items as item, index}
-						<tr>
-							<td>{item.id}</td>
-							<td>{item.title}</td>
-							<td>{item.sub_title}</td>
-							<td>{item.release ? '공개' : '비공개'}</td>
-							<td>{item.count}</td>
-							<td>{formatDate(item.created_at)}</td>
-							<td>
-								<button>보기</button>
-							</td>
-						</tr>
-					{/each}
-				</table>
-			</div>
-			{#if !items.length >= 1 && !isLoading}
-				<div class="noData_box">
-					<span>조회된 데이터가 없습니다.</span>
+			<div class="group_box_02">
+				<div class="group_box_02_child">
+					<div class="group_box_02_select">
+						<div class="select_div">
+							<select bind:value={selectedCreationDate} on:change={getItem}>
+								<option value="">선택</option>
+								{#each creationDateOptions as option}
+									<option value={option}>{option}</option>
+								{/each}
+							</select>
+							<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+						</div>
+						<div class="select_div">
+							<select bind:value={selectedViews} on:change={getItem}>
+								<option value="">선택</option>
+								{#each viewsDateOptions as option}
+									<option value={option}>{option}</option>
+								{/each}
+							</select>
+							<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+						</div>
+						<div class="select_div">
+							<select bind:value={selectedDisclosure} on:change={getItem}>
+								<option value="">선택</option>
+								{#each disclosureDateOptions as option}
+									<option value={option}>{option}</option>
+								{/each}
+							</select>
+							<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
+						</div>
+					</div>
+					<div class="search_box">
+						<img src="/imgs/icon_search.svg" alt="검색 아이콘" on:click={getItem} />
+						<input
+							bind:value={searchKeyword}
+							type="text"
+							on:keydown={handleKeydown}
+							placeholder="ID/이름으로 검색하기"
+						/>
+					</div>
 				</div>
-			{/if}
-			<LightPaginationNav
-				class="custom-pagination-nav"
-				totalItems={items.length}
-				{pageSize}
-				{currentPage}
-				limit={1}
-				showStepOptions={true}
-				on:setPage={(e) => (currentPage = e.detail.page)}
-			/>
+				<div class="table_box">
+					<table style="position: relative;">
+						<th>ID</th>
+						<th>테스트 이름</th>
+						<th>서브 타이틀</th>
+						<th>공개여부</th>
+						<th>조회수</th>
+						<th style="width: 20rem">생성일</th>
+						<th>상세</th>
+
+						{#each items as item, index}
+							<tr>
+								{#if items.length > 0}
+									<td>{item.id}</td>
+									<td>{item.title}</td>
+									<td>{item.sub_title}</td>
+									<td>{item.release ? '공개' : '비공개'}</td>
+									<td>{item.count}</td>
+									<td>{formatDate(item.created_at)}</td>
+									<td>
+										<button>보기</button>
+									</td>
+								{/if}
+							</tr>
+						{/each}
+					</table>
+				</div>
+
+				{#if items.length <= 0}
+					<div class="noData_box">
+						<span>조회된 데이터가 없습니다.</span>
+					</div>
+				{/if}
+				<LightPaginationNav
+					{totalItems}
+					{pageSize}
+					{currentPage}
+					limit={2}
+					showStepOptions={true}
+					on:setPage={(e) => {
+						currentPage = e.detail.page
+						getItem()
+						currentPage = e.detail.page
+					}}
+				/>
+			</div>
 		</div>
-	</div>
-</main>
+	</main>
+{/if}
 
 <style>
 	.group_box_01 {
@@ -333,9 +365,5 @@
 		.search_box img {
 			right: 1rem;
 		}
-	}
-	.loading-container {
-		position: absolute;
-		top: 12%;
 	}
 </style>
