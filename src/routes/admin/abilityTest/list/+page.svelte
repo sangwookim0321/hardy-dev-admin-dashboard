@@ -2,9 +2,10 @@
 <script>
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
+	import { goto } from '$app/navigation'
 	import { storePath, storeLoadingState } from '$lib/store/store'
 	import { showToast } from '$lib/util/alerts'
-	import { formatDate } from '$lib/util/filter'
+	import { formatDate, formatComma } from '$lib/util/filter'
 	import { paginate, LightPaginationNav } from 'svelte-paginate'
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 	import useApi from '$lib/util/api'
@@ -13,6 +14,12 @@
 
 	let currentPath
 	let items = []
+	let subItems = {
+		totaltests: 0,
+		releasedtests: 0,
+		unreleasedtests: 0,
+		totalcount: 0
+	}
 	let currentPage = 1
 	let pageSize = 5
 	let totalItems = 0
@@ -39,17 +46,16 @@
 		})
 	}
 
-	function getItem() {
-		// storeLoadingState.set(true)
-
-		httpGet(
-			`${endPoints.ABILITY_TEST_LIST}/?creation_date=${selectedCreationDate}&views=${selectedViews}&disclosure=${selectedDisclosure}&search=${searchKeyword}&page=${currentPage}&limit=${pageSize}`,
+	async function getItem() {
+		await httpGet(
+			`${endPoints.ABILITY_TEST}/?creation_date=${selectedCreationDate}&views=${selectedViews}&disclosure=${selectedDisclosure}&search=${searchKeyword}&page=${currentPage}&limit=${pageSize}`,
 			'AbilityTestList',
 			true,
 			(res) => {
-				console.log(res.data)
+				console.log(res)
 				items = res.data.data
 				totalItems = res.data.total
+				subItems = res.data.totalData[0]
 			},
 			(err) => {
 				console.log(err)
@@ -73,8 +79,13 @@
 
 	function handleKeydown(event) {
 		if (event.key === 'Enter') {
+			currentPage = 1
 			getItem()
 		}
+	}
+
+	function searchRemove() {
+		searchKeyword = ''
 	}
 </script>
 
@@ -93,7 +104,7 @@
 						<span class="child_title">등록된 테스트 갯수</span>
 					</div>
 					<div>
-						<span class="child_sub">12개</span>
+						<span class="child_sub">{subItems.totaltests}개</span>
 					</div>
 				</div>
 				<div class="group_box_01_child">
@@ -101,7 +112,7 @@
 						<span class="child_title">공개/비공개</span>
 					</div>
 					<div>
-						<span class="child_sub">10개 / 2개</span>
+						<span class="child_sub">{subItems.releasedtests}개 / {subItems.unreleasedtests}개</span>
 					</div>
 				</div>
 				<div class="group_box_01_child">
@@ -109,7 +120,7 @@
 						<span class="child_title">총 조회수</span>
 					</div>
 					<div>
-						<span class="child_sub">12,232회</span>
+						<span class="child_sub">{formatComma(subItems.totalcount)}회</span>
 					</div>
 				</div>
 			</div>
@@ -118,6 +129,7 @@
 				<div class="group_box_02_child">
 					<div class="group_box_02_select">
 						<div class="select_div">
+							<span>날짜 순</span>
 							<select bind:value={selectedCreationDate} on:change={getItem}>
 								<option value="">선택</option>
 								{#each creationDateOptions as option}
@@ -127,6 +139,7 @@
 							<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
 						</div>
 						<div class="select_div">
+							<span>조회수 순</span>
 							<select bind:value={selectedViews} on:change={getItem}>
 								<option value="">선택</option>
 								{#each viewsDateOptions as option}
@@ -136,6 +149,7 @@
 							<img src="/imgs/icon_top_bottom.svg" alt="arrow" />
 						</div>
 						<div class="select_div">
+							<span>공개여부</span>
 							<select bind:value={selectedDisclosure} on:change={getItem}>
 								<option value="">선택</option>
 								{#each disclosureDateOptions as option}
@@ -146,13 +160,28 @@
 						</div>
 					</div>
 					<div class="search_box">
-						<img src="/imgs/icon_search.svg" alt="검색 아이콘" on:click={getItem} />
 						<input
 							bind:value={searchKeyword}
 							type="text"
 							on:keydown={handleKeydown}
 							placeholder="ID/이름으로 검색하기"
 						/>
+						{#if searchKeyword.length > 0}
+							<img
+								src="/imgs/icon_remove.svg"
+								alt="삭제 아이콘"
+								on:click={() => {
+									searchRemove()
+								}}
+							/>
+						{/if}
+						<button
+							class="search_button"
+							on:click={() => {
+								currentPage = 1
+								getItem()
+							}}>검색</button
+						>
 					</div>
 				</div>
 				<div class="table_box">
@@ -266,26 +295,40 @@
 	}
 	.search_box {
 		position: relative;
+		display: flex;
 	}
 	.search_box img {
 		position: absolute;
-		right: 0rem;
-		bottom: 0.6rem;
-		width: 1.6rem;
+		width: 2rem;
+		top: 1rem;
+		right: 9rem;
 		cursor: pointer;
 	}
 	.search_box input {
 		border: 1px solid var(--main-bg-lightGray-02);
 		border-radius: 5px;
-		padding: 0.5rem 4rem 0.5rem 1rem;
+		padding: 1rem 8rem 1rem 1rem;
 		width: 80%;
 		margin: 0 auto;
 	}
 	.search_box input:focus {
 		outline: 1px solid var(--main-bg-lightGray);
 	}
+	.search_box button {
+		width: 10rem;
+		padding: 1rem 1rem;
+		margin-left: 1rem;
+		border: none;
+		background-color: var(--main-bg-purple);
+		color: var(--main-bg-white);
+		cursor: pointer;
+	}
 	.select_div {
 		position: relative;
+	}
+	.select_div span {
+		margin-right: 1rem;
+		font-weight: 600;
 	}
 	.select_div img {
 		position: absolute;
@@ -296,7 +339,7 @@
 	button {
 		padding: 0.5rem 1rem;
 		border: none;
-		border-radius: 10px;
+		border-radius: 5px;
 		background-color: var(--main-bg-lightGray);
 		color: var(--main-bg-white);
 		cursor: pointer;
@@ -354,6 +397,18 @@
 		.group_box_02_child div {
 			margin-right: 0;
 		}
+		.select_div {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		.select_div span {
+			margin-bottom: 1rem;
+		}
+		.select_div img {
+			top: 64%;
+			right: 0.5rem;
+		}
 		.search_box {
 			display: flex;
 			justify-content: center;
@@ -363,7 +418,7 @@
 			width: 90%;
 		}
 		.search_box img {
-			right: 1rem;
+			right: 9rem;
 		}
 	}
 </style>

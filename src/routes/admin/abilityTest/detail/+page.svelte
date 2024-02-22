@@ -7,7 +7,7 @@
 	import { showToast } from '$lib/util/alerts'
 	import useApi from '$lib/util/api'
 
-	const { httpPostFormData, endPoints, statusHandler } = useApi()
+	const { httpPostFormData, httpGet, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
@@ -72,6 +72,7 @@
 	}
 
 	async function saveTest() {
+		console.log(endPoints.ABILITY_TEST_ADD)
 		if (!test.img) {
 			sweetToast('이미지를 업로드해주세요', 'warning')
 			return
@@ -114,12 +115,12 @@
 		formData.append('questions', JSON.stringify(test.questions))
 
 		await httpPostFormData(
-			endPoints.ABILITY_TEST,
+			endPoints.ABILITY_TEST_ADD,
 			'abilityTestAdd',
 			formData,
 			true,
 			(res) => {
-				sweetToast('능력고사 테스트 등록 성공!', 'success')
+				sweetToast('능력고사 테스트 수정 성공!', 'success')
 				test = {
 					title: '',
 					sub_title: '',
@@ -160,7 +161,7 @@
 <main>
 	<div class="main_top_box">
 		<img src="/imgs/icon_left.svg" alt="icon" />
-		<span>능력고사 테스트 추가</span>
+		<span>능력고사 테스트 상세</span>
 	</div>
 
 	<div class="main_box">

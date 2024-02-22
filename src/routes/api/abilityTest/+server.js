@@ -24,7 +24,96 @@ async function checkAdminPermission(authHeader) {
 	}
 }
 
+export async function GET({ request }) {
+	// 능력고사 테스트 목록 조회 API
+	const authHeader = request.headers.get('authorization')
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const url = new URL(request.url)
+
+		const creation_date = url.searchParams.get('creation_date') // 최신순, 오래된순
+		const views = url.searchParams.get('views') // 높은순, 낮은순
+		const disclosure = url.searchParams.get('disclosure') // 공개, 비공개
+		const search = url.searchParams.get('search') // 검색어(ID, 이름)
+		const page = url.searchParams.get('page') || 1 // 페이지
+		const limit = url.searchParams.get('limit') || 5 // 페이지당 표시할 개수
+		const offset = (page - 1) * limit
+
+		let query = supabase.from('ability_tests').select('*', { count: 'exact' })
+
+		// 검색어 적용
+		if (search) {
+			const searchId = parseInt(search, 10) // 검색어를 정수로 변환
+			if (!isNaN(searchId)) {
+				// 변환된 값이 유효한 숫자인 경우
+				query = query.or(`id.eq.${searchId}`) // 'id' 필드와 직접 비교
+			} else {
+				query = query.ilike('title', `%${search}%`) // 'title'과 같은 문자열 필드에 대해 ilike 사용
+			}
+		}
+
+		// 공개/비공개 필터
+		if (disclosure) {
+			query = query.eq('release', disclosure === '공개')
+		}
+
+		// 정렬
+		if (creation_date) {
+			query = query.order('created_at', { ascending: creation_date === '오래된순' })
+		}
+		if (views) {
+			query = query.order('count', { ascending: views === '높은순' })
+		}
+
+		// 결과 조회
+		const { data, error, count } = await query.range(offset, offset + limit - 1)
+
+		if (error) {
+			throw { status: 400, message: '테스트 정보 조회 실패', error }
+		}
+
+		// 집계 데이터 조회
+		const { data: totalData, error: totalDataError } = await supabase
+			.from('ability_total')
+			.select('*')
+
+		if (totalDataError) {
+			throw {
+				status: 400,
+				message: '테스트 집계 조회 중 오류가 발생했습니다.',
+				totalDataError
+			}
+		}
+
+		return json(
+			{
+				totalData,
+				data: data,
+				message: '테스트 목록을 성공적으로 조회했습니다.',
+				status: 200,
+				page,
+				limit,
+				total: count
+			},
+			{ status: 200 }
+		)
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
+}
+
 export async function POST({ request }) {
+	// 능력고사 테스트 등록 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -96,7 +185,7 @@ export async function POST({ request }) {
 		console.error('서버 오류:', err)
 		return json(
 			{
-				message: `${err.message}`,
+				message: err.message,
 				status: err.status || 400,
 				error: err.error || '서버 오류'
 			},

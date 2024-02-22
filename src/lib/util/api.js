@@ -1,12 +1,4 @@
 import axios from 'axios'
-import { showToast } from '$lib/util/alerts'
-
-function sweetToast(title, icon) {
-	showToast({
-		title: title,
-		icon: icon
-	})
-}
 
 const useApi = () => {
 	let pending_get = {}
@@ -64,10 +56,9 @@ const useApi = () => {
 
 	const endPoints = {
 		// DOMAIN: import.meta.env.VITE_APP_DOMAIN,
-		AUTH_LOGIN: '/api/auth/login',
-		REFRESH_TOKEN: '/api/auth/refresh',
-		ABILITY_TEST_ADD: '/api/abilityTest/add',
-		ABILITY_TEST_LIST: '/api/abilityTest/list'
+		AUTH_LOGIN: '/api/auth/login', // 로그인
+		REFRESH_TOKEN: '/api/auth/refresh', // 토큰 갱신
+		ABILITY_TEST: '/api/abilityTest' // 능력고사 테스트(GET,POST,PUT,DELETE)
 	}
 
 	const httpGet = async (

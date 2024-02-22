@@ -3,6 +3,9 @@
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
 	import { storePath } from '$lib/store/store'
+	import useApi from '$lib/util/api'
+
+	const { httpGet, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
