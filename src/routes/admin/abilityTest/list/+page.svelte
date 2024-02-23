@@ -10,7 +10,7 @@
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 	import useApi from '$lib/util/api'
 
-	const { httpGet, endPoints, statusHandler } = useApi()
+	const { httpGet, httpPatch, endPoints, statusHandler } = useApi()
 
 	let currentPath
 	let items = []
@@ -74,6 +74,35 @@
 			() => {
 				storeLoadingState.set(false)
 			}
+		)
+	}
+
+	function patchRelease(id, release, title) {
+		httpPatch(
+			endPoints.ABILITY_TEST,
+			'AbilityTestRelease',
+			{ id: id, release: release },
+			true,
+			(res) => {
+				console.log(res)
+				getItem()
+				sweetToast(`${title}의 공개상태 변경에 성공했습니다.`, 'success')
+			},
+			(err) => {
+				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
+			},
+			() => {},
+			() => {}
 		)
 	}
 
@@ -200,8 +229,18 @@
 									<td>{item.id}</td>
 									<td>{item.title}</td>
 									<td>{item.sub_title}</td>
-									<td>{item.release ? '공개' : '비공개'}</td>
-									<td>{item.count}</td>
+									<td>
+										<span
+											style={item.release
+												? 'color: var(--main-bg-purple)'
+												: 'color: var(--main-bg-lightGray)'}
+											class="releaseSpan"
+											on:click={() => {
+												patchRelease(item.id, item.release, item.title)
+											}}>{item.release ? '공개' : '비공개'}</span
+										>
+									</td>
+									<td>{formatComma(item.count)}</td>
 									<td>{formatDate(item.created_at)}</td>
 									<td>
 										<button>보기</button>
@@ -362,6 +401,12 @@
 		border: none;
 		outline: none;
 		background-color: var(--main-bg-lightGray-02);
+	}
+	.releaseSpan {
+		cursor: pointer;
+	}
+	.releaseSpan:hover {
+		text-decoration: underline;
 	}
 
 	@media (max-width: 768px) {

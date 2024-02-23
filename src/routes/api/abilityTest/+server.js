@@ -37,8 +37,8 @@ export async function GET({ request }) {
 		const views = url.searchParams.get('views') // 높은순, 낮은순
 		const disclosure = url.searchParams.get('disclosure') // 공개, 비공개
 		const search = url.searchParams.get('search') // 검색어(ID, 이름)
-		const page = url.searchParams.get('page') || 1 // 페이지
-		const limit = url.searchParams.get('limit') || 5 // 페이지당 표시할 개수
+		const page = parseInt(url.searchParams.get('page') || '1', 10) // 페이지
+		const limit = parseInt(url.searchParams.get('limit') || '5', 10) // 페이지당 표시할 개수
 		const offset = (page - 1) * limit
 
 		let query = supabase.from('ability_tests').select('*', { count: 'exact' })
@@ -181,6 +181,49 @@ export async function POST({ request }) {
 		}
 
 		return json({ message: '테스트가 성공적으로 저장되었습니다.', status: 200 }, { status: 200 })
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
+}
+
+export async function PATCH({ request }) {
+	// 능력고사 테스트 공개상태 변경 API
+	const authHeader = request.headers.get('authorization')
+
+	const { id, release } = await request.json()
+
+	if (!id || typeof release !== 'boolean') {
+		return json(
+			{ message: '테스트 ID 또는 release 상태를 올바르게 보내주세요.', status: 400 },
+			{ status: 400 }
+		)
+	}
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const { error } = await supabase
+			.from('ability_tests')
+			.update({ release: !release })
+			.eq('id', id)
+
+		if (error) {
+			console.error('테스트 공개상태 변경 실패:', error)
+			throw { status: 400, message: '테스트 공개상태 변경 실패', error }
+		}
+
+		return json(
+			{ message: '테스트 공개상태가 성공적으로 변경되었습니다.', status: 200 },
+			{ status: 200 }
+		)
 	} catch (err) {
 		console.error('서버 오류:', err)
 		return json(

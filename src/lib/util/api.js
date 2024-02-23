@@ -165,6 +165,34 @@ const useApi = () => {
 		}
 	}
 
+	const httpPatch = async (callUrl, caller, postData, useToken, success, fail, redirection) => {
+		const reqKey = callUrl + caller
+		if (pending_put[reqKey]) {
+			console.log('duplication api patch fail : ' + reqKey)
+			return
+		}
+
+		pending_put[reqKey] = true
+
+		let _reqOption = reqOption()
+
+		if (useToken) {
+			_reqOption = reqOptionWithToken()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
+			}
+		}
+
+		try {
+			const response = await axios.patch(callUrl, postData, _reqOption)
+			success(response)
+		} catch (err) {
+			fail(err)
+		} finally {
+			pending_put[reqKey] = false
+		}
+	}
+
 	const httpDelete = async (callUrl, caller, useToken, success, fail, redirection) => {
 		const reqKey = callUrl + caller
 		if (pending_delete[reqKey]) {
@@ -231,7 +259,16 @@ const useApi = () => {
 		}
 	}
 
-	return { httpGet, httpPost, httpPostFormData, httpPut, httpDelete, endPoints, statusHandler }
+	return {
+		httpGet,
+		httpPost,
+		httpPostFormData,
+		httpPut,
+		httpPatch,
+		httpDelete,
+		endPoints,
+		statusHandler
+	}
 }
 
 export default useApi
