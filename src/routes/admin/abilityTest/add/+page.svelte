@@ -20,7 +20,7 @@
 		title: '테스트 타이틀',
 		sub_title: '테스트 서브 타이틀',
 		description: '설명설명',
-		img: '',
+		img_url: '',
 		img_preview: '',
 		questions: [
 			{
@@ -41,7 +41,7 @@
 			fileReader.readAsDataURL(file)
 			fileReader.onload = () => {
 				test.img_preview = fileReader.result
-				test.img = file
+				test.img_url = file
 			}
 		}
 	}
@@ -72,7 +72,7 @@
 	}
 
 	async function saveTest() {
-		if (!test.img) {
+		if (!test.img_url) {
 			sweetToast('이미지를 업로드해주세요', 'warning')
 			return
 		}
@@ -110,7 +110,7 @@
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
-		formData.append('img', test.img)
+		formData.append('img', test.img_url)
 		formData.append('questions', JSON.stringify(test.questions))
 
 		await httpPostFormData(
@@ -124,7 +124,7 @@
 					title: '',
 					sub_title: '',
 					description: '',
-					img: '',
+					img_url: '',
 					img_preview: '',
 					questions: [
 						{

@@ -32,8 +32,14 @@
 	let disclosureDateOptions = ['공개', '비공개']
 	let searchKeyword = ''
 
+	const params = new URLSearchParams($page.url.search)
+	if (params.has('page')) {
+		currentPage = parseInt(params.get('page'))
+	}
+
 	onMount(() => {
 		currentPath = $page.url.pathname
+		console.log(currentPage)
 		storePath.set(currentPath)
 		storeLoadingState.set(true)
 		getItem()
@@ -106,6 +112,16 @@
 		)
 	}
 
+	function updatePage(page) {
+		currentPage = page
+		getItem()
+		goto(`/admin/abilityTest/list?page=${currentPage}`, { replaceState: true })
+	}
+
+	async function moveDetail(id) {
+		await goto(`/admin/abilityTest/list/${id}?page=${currentPage}`)
+	}
+
 	function handleKeydown(event) {
 		if (event.key === 'Enter') {
 			currentPage = 1
@@ -138,7 +154,7 @@
 				</div>
 				<div class="group_box_01_child">
 					<div>
-						<span class="child_title">공개/비공개</span>
+						<span class="child_title">공개 / 비공개</span>
 					</div>
 					<div>
 						<span class="child_sub">{subItems.releasedtests}개 / {subItems.unreleasedtests}개</span>
@@ -243,7 +259,11 @@
 									<td>{formatComma(item.count)}</td>
 									<td>{formatDate(item.created_at)}</td>
 									<td>
-										<button>보기</button>
+										<button
+											on:click={() => {
+												moveDetail(item.id)
+											}}>보기</button
+										>
 									</td>
 								{/if}
 							</tr>
@@ -263,9 +283,7 @@
 					limit={2}
 					showStepOptions={true}
 					on:setPage={(e) => {
-						currentPage = e.detail.page
-						getItem()
-						currentPage = e.detail.page
+						updatePage(e.detail.page)
 					}}
 				/>
 			</div>
@@ -361,6 +379,9 @@
 		background-color: var(--main-bg-purple);
 		color: var(--main-bg-white);
 		cursor: pointer;
+	}
+	.search_box button:hover {
+		background-color: var(--main-bg-darkPurple);
 	}
 	.select_div {
 		position: relative;

@@ -24,6 +24,162 @@ async function checkAdminPermission(authHeader) {
 	}
 }
 
-export async function GET({ request }) {
+export async function GET({ request, params }) {
 	// 테스트 상세 조회 API
+	const authHeader = request.headers.get('authorization')
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const { id } = params
+
+		const { data, error } = await supabase.from('ability_tests').select().eq('id', id).single()
+
+		if (error) {
+			throw { status: 404, message: '해당 테스트를 찾을 수 없습니다.', error }
+		}
+
+		const { data: questionsData, error: questionsError } = await supabase
+			.from('ability_questions')
+			.select()
+			.eq('test_id', id)
+
+		if (questionsError) {
+			throw {
+				status: 404,
+				message: '해당 테스트의 문제를 찾을 수 없습니다.',
+				error: questionsError
+			}
+		}
+
+		return json(
+			{
+				message: '테스트 상세 조회를 성공했습니다.',
+				data: { ...data, questions: questionsData },
+				status: 200
+			},
+			{ status: 200 }
+		)
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
+}
+
+export async function PUT({ request, params }) {
+	// 능력고사 테스트 수정 API
+	const authHeader = request.headers.get('authorization')
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const { id } = params
+
+		if (!id) {
+			throw { status: 400, message: '테스트 ID를 올바르게 보내주세요.' }
+		}
+
+		const formData = await request.formData()
+		const title = formData.get('title')
+		const sub_title = formData.get('sub_title')
+		const description = formData.get('description')
+		const imgFile = formData.get('img')
+		const questions = JSON.parse(formData.get('questions'))
+
+		// 유효성 검사
+		if (!title || !sub_title || !description || !imgFile) {
+			throw { status: 400, message: '모든 필드를 채워주세요.' }
+		}
+		// 기존 이미지 경로 조회
+		const { data: existingData, error: existingError } = await supabase
+			.from('ability_tests')
+			.select('img_url')
+			.eq('id', id)
+			.single()
+
+		if (existingError) {
+			throw { status: 400, message: '기존 이미지 조회 실패', error: existingError }
+		}
+		// 기존 이미지 삭제
+		const existingImgPath = existingData.img_url.replace('abilityTest-images/', '') // 버킷 이름 제거
+		console.log('existingData:', existingImgPath)
+		const { data: deleteData, error: deleteError } = await supabase.storage
+			.from('abilityTest-images')
+			.remove([existingImgPath])
+
+		console.log('deleteData:', deleteData)
+		console.log('deleteError:', deleteError)
+		if (deleteError) {
+			throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
+		}
+
+		// 이미지 업로드
+		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+			.from('abilityTest-images')
+			.upload(`images/${Date.now()}_${imgFile.name}`, imgFile, {
+				cacheControl: '3600',
+				upsert: false
+			})
+
+		if (imgUploadError) {
+			console.error('이미지 업로드 실패:', imgUploadError)
+			throw { status: 400, message: '이미지 업로드 실패', error: imgUploadError }
+		}
+
+		const img_path = imgUploadData.fullPath
+
+		// 테스트 정보 수정
+		const { data, error } = await supabase
+			.from('ability_tests')
+			.update({
+				title: title,
+				sub_title: sub_title,
+				description: description,
+				img_url: img_path,
+				updated_at: new Date()
+			})
+			.eq('id', id)
+			.select()
+
+		if (error) {
+			console.error('테스트 정보 수정 실패:', error)
+			throw { status: 400, message: '테스트 정보 수정 실패', error: error }
+		}
+
+		const testId = data[0].id
+
+		// 질문 정보 수정
+		const questionsWithTestId = questions.map((question) => ({
+			...question,
+			test_id: testId
+		}))
+
+		const { error: questionsUpdateError } = await supabase
+			.from('ability_questions')
+			.upsert(questionsWithTestId)
+
+		if (questionsUpdateError) {
+			console.error('질문 정보 수정 실패:', questionsUpdateError)
+			throw { status: 400, message: '질문 정보 수정 실패', error: questionsUpdateError }
+		}
+
+		return json({ message: '테스트가 성공적으로 수정되었습니다.', status: 200 }, { status: 200 })
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
 }

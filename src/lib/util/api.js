@@ -92,7 +92,7 @@ const useApi = () => {
 
 			success(response)
 		} catch (err) {
-			fail(err.response.data)
+			fail(err)
 		} finally {
 			pending_get[reqKey] = false
 			finallyCallback()
@@ -259,13 +259,52 @@ const useApi = () => {
 		}
 	}
 
+	const httpPutFormData = async (
+		callUrl,
+		caller,
+		postData,
+		useToken,
+		success,
+		fail,
+		redirection,
+		finallyCallback
+	) => {
+		const reqKey = callUrl + caller
+		if (pending_post[reqKey]) {
+			console.log('duplication api put fail : ' + reqKey)
+			return
+		}
+
+		pending_post[reqKey] = true
+
+		let _reqOption = reqOptionFormData()
+
+		if (useToken) {
+			_reqOption = reqOptionWithTokenFormData()
+			if (!_reqOption.headers.Authorization) {
+				redirection()
+			}
+		}
+
+		try {
+			const response = await axios.put(callUrl, postData, _reqOption)
+			success(response)
+		} catch (err) {
+			fail(err)
+		} finally {
+			pending_post[reqKey] = false
+			finallyCallback() // 최종 작업 완료 후 콜백
+		}
+	}
+
 	return {
 		httpGet,
 		httpPost,
-		httpPostFormData,
 		httpPut,
 		httpPatch,
 		httpDelete,
+		httpPostFormData,
+		httpPutFormData,
 		endPoints,
 		statusHandler
 	}

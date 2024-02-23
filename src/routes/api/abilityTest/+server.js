@@ -65,6 +65,9 @@ export async function GET({ request }) {
 		}
 		if (views) {
 			query = query.order('count', { ascending: views === '높은순' })
+		} else {
+			// 다른 정렬 조건이 지정되지 않았을 때 기본적으로 ID 기준 내림차순으로 정렬
+			query = query.order('id', { ascending: true })
 		}
 
 		// 결과 조회

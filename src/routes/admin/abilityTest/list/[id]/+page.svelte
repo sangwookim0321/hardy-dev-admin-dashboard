@@ -7,20 +7,22 @@
 	import { showToast } from '$lib/util/alerts'
 	import useApi from '$lib/util/api'
 
-	const { httpPostFormData, httpGet, endPoints, statusHandler } = useApi()
+	const { httpGet, httpPutFormData, endPoints, statusHandler } = useApi()
 
 	let currentPath
+	let pageId = $page.params.id
 
 	onMount(() => {
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
+		getItem()
 	})
 
 	let test = {
 		title: '테스트 타이틀',
 		sub_title: '테스트 서브 타이틀',
 		description: '설명설명',
-		img: '',
+		img_url: '',
 		img_preview: '',
 		questions: [
 			{
@@ -41,7 +43,7 @@
 			fileReader.readAsDataURL(file)
 			fileReader.onload = () => {
 				test.img_preview = fileReader.result
-				test.img = file
+				test.img_url = file
 			}
 		}
 	}
@@ -72,8 +74,7 @@
 	}
 
 	async function saveTest() {
-		console.log(endPoints.ABILITY_TEST_ADD)
-		if (!test.img) {
+		if (!test.img_url) {
 			sweetToast('이미지를 업로드해주세요', 'warning')
 			return
 		}
@@ -111,33 +112,17 @@
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
-		formData.append('img', test.img)
+		formData.append('img', test.img_url)
 		formData.append('questions', JSON.stringify(test.questions))
 
-		await httpPostFormData(
-			endPoints.ABILITY_TEST_ADD,
-			'abilityTestAdd',
+		await httpPutFormData(
+			`${endPoints.ABILITY_TEST}/${pageId}`,
+			'abilityTestEdit',
 			formData,
 			true,
 			(res) => {
 				sweetToast('능력고사 테스트 수정 성공!', 'success')
-				test = {
-					title: '',
-					sub_title: '',
-					description: '',
-					img: '',
-					img_preview: '',
-					questions: [
-						{
-							question_number: 1,
-							question_name: '',
-							question_list: ['', ''],
-							question_etc: '',
-							answer: 0,
-							score: 0
-						}
-					]
-				}
+				getItem()
 			},
 			(err) => {
 				console.log(err)
@@ -156,11 +141,55 @@
 			() => {}
 		)
 	}
+
+	function setImageUrl(imgUrl) {
+		const domainPath = 'https://aqnmhrbebgwoziqtyyns.supabase.co/storage/v1/object/public/'
+		test.img_preview = domainPath + imgUrl
+	}
+
+	async function getItem() {
+		await httpGet(
+			`${endPoints.ABILITY_TEST}/${pageId}`,
+			`abilityTestDetail/${pageId}`,
+			true,
+			(res) => {
+				console.log(res)
+				test = res.data.data
+				setImageUrl(test.img_url)
+			},
+			(err) => {
+				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
+			},
+			() => {},
+			() => {}
+		)
+	}
+
+	function movePage() {
+		history.back()
+	}
 </script>
 
 <main>
 	<div class="main_top_box">
-		<img src="/imgs/icon_left.svg" alt="icon" />
+		<img
+			style="cursor: pointer;"
+			src="/imgs/icon_left.svg"
+			alt="icon"
+			on:click={() => {
+				movePage()
+			}}
+		/>
 		<span>능력고사 테스트 상세</span>
 	</div>
 
