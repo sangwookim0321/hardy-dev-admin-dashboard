@@ -10,7 +10,7 @@
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 	import useApi from '$lib/util/api'
 
-	const { httpGet, httpPatch, endPoints, statusHandler } = useApi()
+	const { httpGet, httpDelete, httpPatch, endPoints, statusHandler } = useApi()
 
 	let currentPath
 	let items = []
@@ -31,6 +31,9 @@
 	let viewsDateOptions = ['높은순', '낮은순']
 	let disclosureDateOptions = ['공개', '비공개']
 	let searchKeyword = ''
+	let checkboxStatus = []
+	let selectedIds = []
+	let oldImagePaths = []
 
 	const params = new URLSearchParams($page.url.search)
 	if (params.has('page')) {
@@ -39,7 +42,6 @@
 
 	onMount(() => {
 		currentPath = $page.url.pathname
-		console.log(currentPage)
 		storePath.set(currentPath)
 		storeLoadingState.set(true)
 		getItem()
@@ -58,7 +60,6 @@
 			'AbilityTestList',
 			true,
 			(res) => {
-				console.log(res)
 				items = res.data.data
 				totalItems = res.data.total
 				subItems = res.data.totalData[0]
@@ -83,6 +84,41 @@
 		)
 	}
 
+	async function deleteItem() {
+		if (selectedIds.length <= 0) {
+			sweetToast('삭제할 항목을 선택해주세요.', 'error')
+			return
+		}
+
+		await httpDelete(
+			endPoints.ABILITY_TEST,
+			'AbilityTestDelete',
+			{ ids: selectedIds, oldImagePaths: oldImagePaths },
+			true,
+			async (res) => {
+				await getItem()
+				sweetToast('선택한 테스트를 삭제했습니다.', 'success')
+			},
+			(err) => {
+				console.log(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
+			},
+			() => {},
+			() => {
+				selectedIds = []
+			}
+		)
+	}
+
 	function patchRelease(id, release, title) {
 		httpPatch(
 			endPoints.ABILITY_TEST,
@@ -90,7 +126,6 @@
 			{ id: id, release: release },
 			true,
 			(res) => {
-				console.log(res)
 				getItem()
 				sweetToast(`${title}의 공개상태 변경에 성공했습니다.`, 'success')
 			},
@@ -131,6 +166,18 @@
 
 	function searchRemove() {
 		searchKeyword = ''
+	}
+
+	function setId(id, img, index) {
+		if (!selectedIds.includes(id)) {
+			selectedIds.push(id)
+			oldImagePaths.push(img)
+			checkboxStatus[index] = true
+		} else {
+			selectedIds = selectedIds.filter((selectedId) => selectedId !== id)
+			oldImagePaths = oldImagePaths.filter((oldImagePath) => oldImagePath !== img)
+			checkboxStatus[index] = false
+		}
 	}
 </script>
 
@@ -231,6 +278,14 @@
 				</div>
 				<div class="table_box">
 					<table style="position: relative;">
+						<th>
+							<button
+								class="removeBtn"
+								on:click={() => {
+									deleteItem()
+								}}>삭제</button
+							>
+						</th>
 						<th>ID</th>
 						<th>테스트 이름</th>
 						<th>서브 타이틀</th>
@@ -242,6 +297,14 @@
 						{#each items as item, index}
 							<tr>
 								{#if items.length > 0}
+									<td>
+										<input
+											id={`check${index}`}
+											type="checkbox"
+											bind:checked={checkboxStatus[index]}
+											on:change={() => setId(item.id, item.img_url)}
+										/>
+									</td>
 									<td>{item.id}</td>
 									<td>{item.title}</td>
 									<td>{item.sub_title}</td>
@@ -428,6 +491,17 @@
 	}
 	.releaseSpan:hover {
 		text-decoration: underline;
+	}
+	.removeBtn {
+		background-color: var(--main-bg-red);
+		color: var(--main-bg-white);
+	}
+	.removeBtn:hover {
+		background-color: var(--main-bg-darkRed);
+		color: var(--main-bg-white);
+	}
+	input:checked {
+		accent-color: var(--main-bg-red);
 	}
 
 	@media (max-width: 768px) {

@@ -239,3 +239,62 @@ export async function PATCH({ request }) {
 		)
 	}
 }
+
+export async function DELETE({ request }) {
+	// 능력고사 테스트 삭제 API
+	const authHeader = request.headers.get('authorization')
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const { ids, oldImagePaths } = await request.json()
+
+		if (ids.length === 0) {
+			return json({ message: '삭제할 테스트 ID를 보내주세요.', status: 400 }, { status: 400 })
+		}
+
+		if (oldImagePaths.length === 0) {
+			return json({ message: '삭제할 이미지 경로를 보내주세요.', status: 400 }, { status: 400 })
+		}
+
+		const existingImgPath = oldImagePaths.map((path) => path.replace('abilityTest-images/', ''))
+
+		const { error: questionsDeleteError } = await supabase
+			.from('ability_questions')
+			.delete()
+			.in('test_id', ids)
+
+		if (questionsDeleteError) {
+			console.error('질문 삭제 실패:', questionsDeleteError)
+			throw { status: 400, message: '질문 삭제 실패', error: questionsDeleteError }
+		}
+
+		const { error: testsDeleteError } = await supabase.from('ability_tests').delete().in('id', ids)
+
+		if (testsDeleteError) {
+			console.error('테스트 삭제 실패:', testsDeleteError)
+			throw { status: 400, message: '테스트 삭제 실패', error: testsDeleteError }
+		}
+
+		const { error: imgDeleteError } = await supabase.storage
+			.from('abilityTest-images')
+			.remove(existingImgPath)
+
+		if (imgDeleteError) {
+			console.error('이미지 삭제 실패:', imgDeleteError)
+			throw { status: 400, message: '이미지 삭제 실패', error: imgDeleteError }
+		}
+
+		return json({ message: '테스트가 성공적으로 삭제되었습니다.', status: 200 }, { status: 200 })
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
+}

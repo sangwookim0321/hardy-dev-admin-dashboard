@@ -91,33 +91,25 @@ export async function PUT({ request, params }) {
 		const sub_title = formData.get('sub_title')
 		const description = formData.get('description')
 		const imgFile = formData.get('img')
+		const oldImageUrl = formData.get('oldImageUrl')
 		const questions = JSON.parse(formData.get('questions'))
 
 		// 유효성 검사
 		if (!title || !sub_title || !description || !imgFile) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
-		// 기존 이미지 경로 조회
-		const { data: existingData, error: existingError } = await supabase
-			.from('ability_tests')
-			.select('img_url')
-			.eq('id', id)
-			.single()
 
-		if (existingError) {
-			throw { status: 400, message: '기존 이미지 조회 실패', error: existingError }
-		}
 		// 기존 이미지 삭제
-		const existingImgPath = existingData.img_url.replace('abilityTest-images/', '') // 버킷 이름 제거
-		console.log('existingData:', existingImgPath)
-		const { data: deleteData, error: deleteError } = await supabase.storage
-			.from('abilityTest-images')
-			.remove([existingImgPath])
+		const existingImgPath = oldImageUrl.replace('abilityTest-images/', '')
 
-		console.log('deleteData:', deleteData)
-		console.log('deleteError:', deleteError)
-		if (deleteError) {
-			throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
+		if (existingImgPath) {
+			const { error: deleteError } = await supabase.storage
+				.from('abilityTest-images')
+				.remove([existingImgPath])
+
+			if (deleteError) {
+				throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
+			}
 		}
 
 		// 이미지 업로드

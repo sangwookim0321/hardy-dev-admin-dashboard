@@ -4,6 +4,7 @@ const useApi = () => {
 	let pending_get = {}
 	let pending_post = {}
 	let pending_put = {}
+	let pending_patch = {}
 	let pending_delete = {}
 
 	const reqOption = () => {
@@ -167,12 +168,12 @@ const useApi = () => {
 
 	const httpPatch = async (callUrl, caller, postData, useToken, success, fail, redirection) => {
 		const reqKey = callUrl + caller
-		if (pending_put[reqKey]) {
+		if (pending_patch[reqKey]) {
 			console.log('duplication api patch fail : ' + reqKey)
 			return
 		}
 
-		pending_put[reqKey] = true
+		pending_patch[reqKey] = true
 
 		let _reqOption = reqOption()
 
@@ -189,11 +190,20 @@ const useApi = () => {
 		} catch (err) {
 			fail(err)
 		} finally {
-			pending_put[reqKey] = false
+			pending_patch[reqKey] = false
 		}
 	}
 
-	const httpDelete = async (callUrl, caller, useToken, success, fail, redirection) => {
+	const httpDelete = async (
+		callUrl,
+		caller,
+		postData,
+		useToken,
+		success,
+		fail,
+		redirection,
+		finallyCallback
+	) => {
 		const reqKey = callUrl + caller
 		if (pending_delete[reqKey]) {
 			console.log('duplication api delete fail : ' + reqKey)
@@ -212,12 +222,13 @@ const useApi = () => {
 		}
 
 		try {
-			const response = await axios.delete(callUrl, _reqOption)
+			const response = await axios.delete(callUrl, { ..._reqOption, data: postData })
 			success(response)
 		} catch (err) {
 			fail(err)
 		} finally {
 			pending_delete[reqKey] = false
+			finallyCallback()
 		}
 	}
 

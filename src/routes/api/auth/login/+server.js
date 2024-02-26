@@ -41,7 +41,7 @@ export async function POST({ request }) {
 			{ status: 200 }
 		)
 	} catch (err) {
-		console.log(err)
+		console.error(err)
 		return json(
 			{
 				message: `${err.message}`,

@@ -37,7 +37,6 @@
 
 				await goto('/admin/dashBoard')
 				sweetToast('로그인 되었습니다!', 'success')
-				console.log(res)
 			},
 			(err) => {
 				console.log(err)

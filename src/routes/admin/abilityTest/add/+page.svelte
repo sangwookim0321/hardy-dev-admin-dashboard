@@ -168,11 +168,7 @@
 			<label for="file_upload" class="custom_file_upload">
 				<div style="cursor: pointer;" class="image_upload">
 					{#if test.img_preview}
-						<img
-							style="object-fit: cover; width: 300px; height: 300px;"
-							src={test.img_preview}
-							alt="이미지"
-						/>
+						<img class="img_preview" src={test.img_preview} alt="이미지" />
 					{:else}
 						<img src="/imgs/icon_add.svg" alt="이미지 추가" />
 					{/if}
@@ -185,6 +181,17 @@
 					on:change={handleFileChange}
 				/>
 			</label>
+			{#if test.img_preview}
+				<img
+					class="img_remove"
+					src="/imgs/icon_remove.svg"
+					alt="이미지 삭제"
+					on:click={() => {
+						test.img_preview = ''
+						test.img_url = ''
+					}}
+				/>
+			{/if}
 			<div class="test_details">
 				<label for="title">제목</label>
 				<input type="text" id="title" class="title" bind:value={test.title} />
@@ -245,6 +252,7 @@
 
 <style>
 	.test_info {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -338,6 +346,18 @@
 	.save_button:hover {
 		background-color: var(--main-bg-darkPurple);
 	}
+	.img_preview {
+		width: 300px;
+		height: 300px;
+		object-fit: cover;
+		border-radius: 10px;
+	}
+	.img_remove {
+		position: absolute;
+		top: 2%;
+		right: 38.5%;
+		cursor: pointer;
+	}
 
 	@media (max-width: 768px) {
 		.main_top_box {
@@ -369,6 +389,10 @@
 		}
 		.image_upload {
 			width: 100%;
+		}
+		.img_preview {
+			width: 100%;
+			height: 300px;
 		}
 	}
 </style>

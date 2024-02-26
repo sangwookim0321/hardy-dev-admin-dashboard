@@ -9,5 +9,6 @@ export function formatDate(data) {
 }
 
 export function formatComma(data) {
+	if (data === null || data === undefined) return 0
 	return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }

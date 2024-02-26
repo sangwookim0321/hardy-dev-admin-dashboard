@@ -3,8 +3,9 @@
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
 	import { goto } from '$app/navigation'
-	import { storePath } from '$lib/store/store'
+	import { storePath, storeLoadingState } from '$lib/store/store'
 	import { showToast } from '$lib/util/alerts'
+	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 	import useApi from '$lib/util/api'
 
 	const { httpGet, httpPutFormData, endPoints, statusHandler } = useApi()
@@ -15,6 +16,7 @@
 	onMount(() => {
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
+		storeLoadingState.set(true)
 		getItem()
 	})
 
@@ -35,6 +37,7 @@
 			}
 		]
 	}
+	let oldImageUrl = ''
 
 	function handleFileChange(event) {
 		const file = event.target.files[0]
@@ -113,6 +116,7 @@
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
 		formData.append('img', test.img_url)
+		formData.append('oldImageUrl', oldImageUrl)
 		formData.append('questions', JSON.stringify(test.questions))
 
 		await httpPutFormData(
@@ -153,8 +157,8 @@
 			`abilityTestDetail/${pageId}`,
 			true,
 			(res) => {
-				console.log(res)
 				test = res.data.data
+				oldImageUrl = res.data.data.img_url
 				setImageUrl(test.img_url)
 			},
 			(err) => {
@@ -171,7 +175,9 @@
 				)
 			},
 			() => {},
-			() => {}
+			() => {
+				storeLoadingState.set(false)
+			}
 		)
 	}
 
@@ -180,101 +186,118 @@
 	}
 </script>
 
-<main>
-	<div class="main_top_box">
-		<img
-			style="cursor: pointer;"
-			src="/imgs/icon_left.svg"
-			alt="icon"
-			on:click={() => {
-				movePage()
-			}}
-		/>
-		<span>능력고사 테스트 상세</span>
-	</div>
-
-	<div class="main_box">
-		<div class="test_info">
-			<label for="file_upload" class="custom_file_upload">
-				<div style="cursor: pointer;" class="image_upload">
-					{#if test.img_preview}
-						<img
-							style="object-fit: cover; width: 300px; height: 300px;"
-							src={test.img_preview}
-							alt="이미지"
-						/>
-					{:else}
-						<img src="/imgs/icon_add.svg" alt="이미지 추가" />
-					{/if}
-				</div>
-				<input
-					type="file"
-					id="file_upload"
-					style="display: none;"
-					class="file_upload"
-					on:change={handleFileChange}
-				/>
-			</label>
-			<div class="test_details">
-				<label for="title">제목</label>
-				<input type="text" id="title" class="title" bind:value={test.title} />
-				<label for="sub_title">서브 제목</label>
-				<input type="text" id="sub_title" class="sub_title" bind:value={test.sub_title} />
-				<label for="description">설명</label>
-				<textarea id="description" class="description" bind:value={test.description}></textarea>
-			</div>
+{#if $storeLoadingState}
+	<LoadingSpinner />
+{:else}
+	<main>
+		<div class="main_top_box">
+			<img
+				style="cursor: pointer;"
+				src="/imgs/icon_left.svg"
+				alt="icon"
+				on:click={() => {
+					movePage()
+				}}
+			/>
+			<span>능력고사 테스트 상세</span>
 		</div>
 
-		<hr />
+		<div class="main_box">
+			<div class="test_info">
+				<label for="file_upload" class="custom_file_upload">
+					<div style="cursor: pointer;" class="image_upload">
+						{#if test.img_preview}
+							<img class="img_preview" src={test.img_preview} alt="이미지" />
+						{:else}
+							<img src="/imgs/icon_add.svg" alt="이미지 추가" />
+						{/if}
+					</div>
+					<input
+						type="file"
+						id="file_upload"
+						style="display: none;"
+						class="file_upload"
+						on:change={handleFileChange}
+					/>
+				</label>
+				{#if test.img_preview}
+					<img
+						class="img_remove"
+						src="/imgs/icon_remove.svg"
+						alt="이미지 삭제"
+						on:click={() => {
+							test.img_preview = ''
+							test.img_url = ''
+						}}
+					/>
+				{/if}
+				<div class="test_details">
+					<label for="title">제목</label>
+					<input type="text" id="title" class="title" bind:value={test.title} />
+					<label for="sub_title">서브 제목</label>
+					<input type="text" id="sub_title" class="sub_title" bind:value={test.sub_title} />
+					<label for="description">설명</label>
+					<textarea id="description" class="description" bind:value={test.description}></textarea>
+				</div>
+			</div>
 
-		<div class="questions">
-			{#each test.questions as question, index}
-				<label for={`question_number_${index}`}>{index + 1}번</label>
-				<div class="question_set">
-					<label for="question_number">질문 번호</label>
-					<input
-						type="number"
-						id={`question_number_${index}`}
-						class="question_number"
-						bind:value={question.question_number}
-					/>
-					<label for={`question_name_${index}`}>질문 이름</label>
-					<input
-						type="text"
-						id={`question_name_${index}`}
-						class="question_name"
-						bind:value={question.question_name}
-					/>
-					{#each question.question_list as option, index2}
-						<label for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label>
+			<hr />
+
+			<div class="questions">
+				{#each test.questions as question, index}
+					<label for={`question_number_${index}`}>{index + 1}번</label>
+					<div class="question_set">
+						<label for="question_number">질문 번호</label>
+						<input
+							type="number"
+							id={`question_number_${index}`}
+							class="question_number"
+							bind:value={question.question_number}
+						/>
+						<label for={`question_name_${index}`}>질문 이름</label>
 						<input
 							type="text"
-							id={`option_${index}_${index2}`}
-							bind:value={question.question_list[index2]}
+							id={`question_name_${index}`}
+							class="question_name"
+							bind:value={question.question_name}
 						/>
-					{/each}
-					<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
-					<label for={`question_etc_${index}`}>기타 문제설명</label>
-					<textarea
-						id={`question_etc_${index}`}
-						class="question_etc"
-						bind:value={question.question_etc}
-					></textarea>
-					<label for={`answer_${index}`}>정답</label>
-					<input type="number" id={`answer_${index}`} class="answer" bind:value={question.answer} />
-					<label for={`score_${index}`}>배점</label>
-					<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
-					<hr />
-				</div>
-			{/each}
-			<button on:click={addQuestion}>질문 추가</button>
+						{#each question.question_list as option, index2}
+							<label for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label>
+							<input
+								type="text"
+								id={`option_${index}_${index2}`}
+								bind:value={question.question_list[index2]}
+							/>
+						{/each}
+						<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
+						<label for={`question_etc_${index}`}>기타 문제설명</label>
+						<textarea
+							id={`question_etc_${index}`}
+							class="question_etc"
+							bind:value={question.question_etc}
+						></textarea>
+						<label for={`answer_${index}`}>정답</label>
+						<input
+							type="number"
+							id={`answer_${index}`}
+							class="answer"
+							bind:value={question.answer}
+						/>
+						<label for={`score_${index}`}>배점</label>
+						<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
+						<hr />
+					</div>
+				{/each}
+				<button on:click={addQuestion}>질문 추가</button>
+			</div>
+			<button class="save_button" on:click={saveTest}>저장</button>
 		</div>
-		<button class="save_button" on:click={saveTest}>저장</button>
-	</div>
-</main>
+	</main>
+{/if}
 
 <style>
 	.test_info {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -368,6 +391,18 @@
 	.save_button:hover {
 		background-color: var(--main-bg-darkPurple);
 	}
+	.img_preview {
+		width: 300px;
+		height: 300px;
+		object-fit: cover;
+		border-radius: 10px;
+	}
+	.img_remove {
+		position: absolute;
+		top: 2%;
+		right: 38.5%;
+		cursor: pointer;
+	}
 
 	@media (max-width: 768px) {
 		.main_top_box {
@@ -399,6 +434,10 @@
 		}
 		.image_upload {
 			width: 100%;
+		}
+		.img_preview {
+			width: 100%;
+			height: 300px;
 		}
 	}
 </style>

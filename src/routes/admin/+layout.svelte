@@ -8,6 +8,7 @@
 	const { httpPost, endPoints, statusHandler } = useApi()
 
 	let currentPath
+	let refreshInterval
 
 	const unsubscribe = storePath.subscribe((value) => {
 		currentPath = value
@@ -54,12 +55,18 @@
 		isSidebarOpen = false
 	}
 
-	onDestroy(() => {
-		unsubscribe()
-	})
-
 	onMount(async () => {
 		await refresh()
+
+		refreshInterval = setInterval(async () => {
+			console.log('refresh')
+			await refresh()
+		}, 3600000)
+	})
+
+	onDestroy(() => {
+		unsubscribe()
+		clearInterval(refreshInterval)
 	})
 
 	function sweetToast(title, icon) {
