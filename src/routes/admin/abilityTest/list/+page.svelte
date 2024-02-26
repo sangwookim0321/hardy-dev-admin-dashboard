@@ -44,6 +44,12 @@
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
 		storeLoadingState.set(true)
+
+		// URL 쿼리 파라미터 읽기
+		selectedCreationDate = params.get('creation_date') || ''
+		selectedViews = params.get('views') || ''
+		selectedDisclosure = params.get('disclosure') || ''
+
 		getItem()
 	})
 
@@ -153,6 +159,12 @@
 		goto(`/admin/abilityTest/list?page=${currentPage}`, { replaceState: true })
 	}
 
+	function updateQueryParams(param, value) {
+		const url = new URL(window.location)
+		url.searchParams.set(param, value)
+		goto(url.toString(), { replaceState: true })
+	}
+
 	async function moveDetail(id) {
 		await goto(`/admin/abilityTest/list/${id}?page=${currentPage}`)
 	}
@@ -222,7 +234,10 @@
 					<div class="group_box_02_select">
 						<div class="select_div">
 							<span>날짜 순</span>
-							<select bind:value={selectedCreationDate} on:change={getItem}>
+							<select
+								bind:value={selectedCreationDate}
+								on:change={() => updateQueryParams('creation_date', selectedCreationDate)}
+							>
 								<option value="">선택</option>
 								{#each creationDateOptions as option}
 									<option value={option}>{option}</option>
@@ -232,7 +247,10 @@
 						</div>
 						<div class="select_div">
 							<span>조회수 순</span>
-							<select bind:value={selectedViews} on:change={getItem}>
+							<select
+								bind:value={selectedViews}
+								on:change={() => updateQueryParams('views', selectedViews)}
+							>
 								<option value="">선택</option>
 								{#each viewsDateOptions as option}
 									<option value={option}>{option}</option>
@@ -242,7 +260,10 @@
 						</div>
 						<div class="select_div">
 							<span>공개여부</span>
-							<select bind:value={selectedDisclosure} on:change={getItem}>
+							<select
+								bind:value={selectedDisclosure}
+								on:change={() => updateQueryParams('disclosure', selectedDisclosure)}
+							>
 								<option value="">선택</option>
 								{#each disclosureDateOptions as option}
 									<option value={option}>{option}</option>
@@ -559,6 +580,10 @@
 		}
 		.search_box img {
 			right: 9rem;
+		}
+		.releaseSpan {
+			font-size: 1rem;
+			cursor: pointer;
 		}
 	}
 </style>

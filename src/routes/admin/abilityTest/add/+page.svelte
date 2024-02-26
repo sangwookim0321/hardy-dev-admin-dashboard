@@ -394,5 +394,11 @@
 			width: 100%;
 			height: 300px;
 		}
+		.img_remove {
+			position: absolute;
+			top: 2%;
+			right: 1.5%;
+			cursor: pointer;
+		}
 	}
 </style>
