@@ -59,7 +59,8 @@ const useApi = () => {
 		// DOMAIN: import.meta.env.VITE_APP_DOMAIN,
 		AUTH_LOGIN: '/api/auth/login', // 로그인
 		REFRESH_TOKEN: '/api/auth/refresh', // 토큰 갱신
-		ABILITY_TEST: '/api/abilityTest' // 능력고사 테스트(GET,POST,PUT,DELETE)
+		ABILITY_TEST: '/api/abilityTest', // 능력고사 테스트(GET,POST,PUT,PATCH,DELETE)
+		MBTI_TEST: '/api/mbtiTest' // MBTI 테스트(GET,POST,PUT,PATCH,DELETE)
 	}
 
 	const httpGet = async (

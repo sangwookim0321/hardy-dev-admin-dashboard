@@ -52,16 +52,34 @@
 			{
 				question_number: test.questions.length + 1,
 				question_name: '',
-				question_list: [],
+				question_list: ['1.질문', '2.질문'],
 				question_etc: '',
 				answer: 0,
 				score: 0
 			}
 		]
+		setTimeout(() => {
+			window.scrollBy({
+				top: 600,
+				behavior: 'smooth'
+			})
+		}, 100)
 	}
 
 	function addOption(index) {
 		test.questions[index].question_list = [...test.questions[index].question_list, '']
+	}
+
+	function removeField(index, index2, type) {
+		if (type === 'option') {
+			test.questions[index].question_list.splice(index2, 1)
+
+			test = { ...test }
+		} else if (type === 'question') {
+			test.questions.splice(index, 1)
+
+			test = { ...test }
+		}
 	}
 
 	function sweetToast(title, icon) {
@@ -206,7 +224,20 @@
 
 		<div class="questions">
 			{#each test.questions as question, index}
-				<label for={`question_number_${index}`}>{index + 1}번</label>
+				<div class="questions_top_box">
+					<label style="font-weight: 600; font-size: 2rem;" for={`question_number_${index}`}
+						>{index + 1}번</label
+					>
+					{#if test.questions.length > 1}
+						<img
+							class="remove_img"
+							src="/imgs/icon_remove.svg"
+							alt="remove"
+							on:click={() => removeField(index, null, 'question')}
+						/>
+					{/if}
+				</div>
+
 				<div class="question_set">
 					<label for="question_number">질문 번호</label>
 					<input
@@ -223,8 +254,23 @@
 						bind:value={question.question_name}
 					/>
 					{#each question.question_list as option, index2}
-						<label for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label>
+						<div class="question_list_box">
+							<label
+								style="font-weight: 600; color: var(--secondary-color);"
+								for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label
+							>
+							{#if question.question_list.length > 2}
+								<img
+									class="remove_img"
+									src="/imgs/icon_remove.svg"
+									alt="remove"
+									on:click={() => removeField(index, index2, 'option')}
+								/>
+							{/if}
+						</div>
+
 						<input
+							class="question_list_input"
 							type="text"
 							id={`option_${index}_${index2}`}
 							bind:value={question.question_list[index2]}
@@ -277,7 +323,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 30%;
+		width: 50%;
 	}
 	.question_set {
 		display: flex;
@@ -287,6 +333,12 @@
 	.description,
 	.question_etc {
 		height: 150px;
+	}
+	.questions_top_box {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
 	}
 	hr {
 		width: 100%;
@@ -320,7 +372,7 @@
 	}
 	button {
 		margin: 1rem 0;
-		padding: 0.5rem 1rem;
+		padding: 1rem 1.2rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-lightGray);
@@ -333,6 +385,7 @@
 	label {
 		margin: 1rem 0;
 		font-size: 1.5rem;
+		font-weight: 600;
 	}
 	.save_button {
 		margin-top: 3rem;
@@ -358,8 +411,26 @@
 		right: 38.5%;
 		cursor: pointer;
 	}
+	.remove_img {
+		width: 2.2rem;
+		cursor: pointer;
+		margin-left: 1rem;
+	}
+	.question_list_box {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.question_list_input {
+		border: 1px solid var(--main-bg-gray);
+		border-radius: 10px;
+		padding: 1.2rem 1rem;
+	}
 
 	@media (max-width: 768px) {
+		.test_details {
+			width: 100%;
+		}
 		.main_top_box {
 			margin: 2rem 0;
 		}
@@ -379,7 +450,7 @@
 			font-size: 1.5rem;
 		}
 		.questions {
-			width: 60%;
+			width: 100%;
 		}
 		.save_button {
 			padding: 1rem 4rem;
