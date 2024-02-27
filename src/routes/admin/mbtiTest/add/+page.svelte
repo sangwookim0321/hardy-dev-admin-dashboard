@@ -177,7 +177,7 @@
 		formData.append('questions', JSON.stringify(test.questions))
 
 		await httpPostFormData(
-			endPoints.ABILITY_TEST,
+			endPoints.MBTI_TEST,
 			'mbtiTestAdd',
 			formData,
 			true,

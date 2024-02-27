@@ -36,17 +36,27 @@ export async function POST({ request }) {
 		const sub_title = formData.get('sub_title')
 		const description = formData.get('description')
 		const imgFile = formData.get('img')
+		const type_category = formData.get('type_category')
+		const types = JSON.parse(formData.get('types'))
 		const questions = JSON.parse(formData.get('questions'))
 
 		// 유효성 검사
-		if (!title || !sub_title || !description || !imgFile) {
+		if (
+			!title ||
+			!sub_title ||
+			!description ||
+			!imgFile ||
+			!type_category ||
+			!types ||
+			!questions
+		) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
 
 		// 이미지 업로드
 		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
-			.from('abilityTest-images')
-			.upload(`images/${Date.now()}_${imgFile.name}`, imgFile, {
+			.from('admin_dashboard_bucket')
+			.upload(`mbtiTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
 				cacheControl: '3600',
 				upsert: false
 			})
@@ -59,12 +69,13 @@ export async function POST({ request }) {
 		const img_path = imgUploadData.fullPath
 		// 테스트 정보 저장
 		const { data, error } = await supabase
-			.from('ability_tests')
+			.from('mbti_tests')
 			.insert({
 				title: title,
 				sub_title: sub_title,
 				description: description,
 				img_url: img_path,
+				type_category: type_category,
 				release: false,
 				created_at: new Date()
 			})
@@ -77,19 +88,39 @@ export async function POST({ request }) {
 
 		const testId = data[0].id
 
-		// 질문 정보 저장
-		const questionsWithTestId = questions.map((question) => ({
-			...question,
-			test_id: testId
+		const typesData = types.map(({ type, description }) => ({
+			test_id: testId,
+			type: type,
+			description: description
 		}))
 
-		const { error: questionsAddError } = await supabase
-			.from('ability_questions')
-			.insert(questionsWithTestId)
+		const { error: typesError } = await supabase.from('mbti_types').insert(typesData)
 
-		if (questionsAddError) {
-			console.error('질문 정보 저장 실패:', questionsAddError)
-			throw { status: 400, message: '질문 정보 저장 실패', error: questionsAddError }
+		if (typesError) {
+			console.error('MBTI 타입 정보 저장 실패:', typesError)
+			throw { status: 400, message: 'MBTI 타입 정보 저장 실패', error: typesError }
+		}
+
+		let setIndex = 1
+		const questionData = []
+
+		for (const questionSet of questions) {
+			for (const question of questionSet) {
+				questionData.push({
+					test_id: data[0].id, // 테스트 ID
+					content: question.content, // 질문 내용
+					types: question.types, // 질문 유형
+					set_id: setIndex // 세트 ID
+				})
+			}
+			setIndex++ // 다음 세트로 넘어갈 때 인덱스 증가
+		}
+
+		const { error: questionsError } = await supabase.from('mbti_questions').insert(questionData)
+
+		if (questionsError) {
+			console.error('MBTI 질문 정보 저장 실패:', questionsError)
+			throw { status: 400, message: 'MBTI 질문 정보 저장 실패', error: questionsError }
 		}
 
 		return json({ message: '테스트가 성공적으로 저장되었습니다.', status: 200 }, { status: 200 })

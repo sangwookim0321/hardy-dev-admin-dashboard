@@ -136,8 +136,8 @@ export async function POST({ request }) {
 
 		// 이미지 업로드
 		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
-			.from('abilityTest-images')
-			.upload(`images/${Date.now()}_${imgFile.name}`, imgFile, {
+			.from('admin_dashboard_bucket')
+			.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
 				cacheControl: '3600',
 				upsert: false
 			})
@@ -257,7 +257,7 @@ export async function DELETE({ request }) {
 			return json({ message: '삭제할 이미지 경로를 보내주세요.', status: 400 }, { status: 400 })
 		}
 
-		const existingImgPath = oldImagePaths.map((path) => path.replace('abilityTest-images/', ''))
+		const existingImgPath = oldImagePaths.map((path) => path.replace('admin_dashboard_bucket/', ''))
 
 		const { error: questionsDeleteError } = await supabase
 			.from('ability_questions')
@@ -277,7 +277,7 @@ export async function DELETE({ request }) {
 		}
 
 		const { error: imgDeleteError } = await supabase.storage
-			.from('abilityTest-images')
+			.from('admin_dashboard_bucket')
 			.remove(existingImgPath)
 
 		if (imgDeleteError) {

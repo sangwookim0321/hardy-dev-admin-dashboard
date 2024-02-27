@@ -100,11 +100,11 @@ export async function PUT({ request, params }) {
 		}
 
 		// 기존 이미지 삭제
-		const existingImgPath = oldImageUrl.replace('abilityTest-images/', '')
+		const existingImgPath = oldImageUrl.replace('admin_dashboard_bucket/', '')
 
 		if (existingImgPath) {
 			const { error: deleteError } = await supabase.storage
-				.from('abilityTest-images')
+				.from('admin_dashboard_bucket')
 				.remove([existingImgPath])
 
 			if (deleteError) {
@@ -114,8 +114,8 @@ export async function PUT({ request, params }) {
 
 		// 이미지 업로드
 		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
-			.from('abilityTest-images')
-			.upload(`images/${Date.now()}_${imgFile.name}`, imgFile, {
+			.from('admin_dashboard_bucket')
+			.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
 				cacheControl: '3600',
 				upsert: false
 			})
