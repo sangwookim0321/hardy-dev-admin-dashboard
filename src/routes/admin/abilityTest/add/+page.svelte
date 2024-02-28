@@ -68,6 +68,12 @@
 
 	function addOption(index) {
 		test.questions[index].question_list = [...test.questions[index].question_list, '']
+		setTimeout(() => {
+			window.scrollBy({
+				top: 300,
+				behavior: 'smooth'
+			})
+		}, 100)
 	}
 
 	function removeField(index, index2, type) {
@@ -190,6 +196,18 @@
 					{:else}
 						<img src="/imgs/icon_add.svg" alt="이미지 추가" />
 					{/if}
+					{#if test.img_preview}
+						<img
+							class="img_remove"
+							src="/imgs/icon_remove.svg"
+							alt="이미지 삭제"
+							on:click={(event) => {
+								event.preventDefault()
+								test.img_preview = ''
+								test.img_url = ''
+							}}
+						/>
+					{/if}
 				</div>
 				<input
 					type="file"
@@ -199,17 +217,6 @@
 					on:change={handleFileChange}
 				/>
 			</label>
-			{#if test.img_preview}
-				<img
-					class="img_remove"
-					src="/imgs/icon_remove.svg"
-					alt="이미지 삭제"
-					on:click={() => {
-						test.img_preview = ''
-						test.img_url = ''
-					}}
-				/>
-			{/if}
 			<div class="test_details">
 				<label for="title">제목</label>
 				<input type="text" id="title" class="title" bind:value={test.title} />
@@ -311,6 +318,7 @@
 		width: 50%;
 	}
 	.image_upload {
+		position: relative;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -408,7 +416,7 @@
 	.img_remove {
 		position: absolute;
 		top: 2%;
-		right: 38.5%;
+		right: 2%;
 		cursor: pointer;
 	}
 	.remove_img {

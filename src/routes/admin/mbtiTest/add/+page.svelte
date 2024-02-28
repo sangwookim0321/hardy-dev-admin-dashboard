@@ -1,4 +1,4 @@
-<!-- 능력고사 테스트 등록 페이지 -->
+<!-- MBTI 테스트 등록 페이지 -->
 <script>
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
@@ -49,6 +49,7 @@
 				test.img_url = file
 			}
 		}
+		event.target.value = ''
 	}
 
 	function addType() {
@@ -82,13 +83,6 @@
 		}, 100)
 	}
 
-	function sweetToast(title, icon) {
-		showToast({
-			title: title,
-			icon: icon
-		})
-	}
-
 	function handleTypeChange(questionIndex, qIndex, event) {
 		if (!event.target.value) return
 
@@ -119,6 +113,13 @@
 
 			test = { ...test }
 		}
+	}
+
+	function sweetToast(title, icon) {
+		showToast({
+			title: title,
+			icon: icon
+		})
 	}
 
 	async function saveTest() {
@@ -182,7 +183,7 @@
 			formData,
 			true,
 			(res) => {
-				sweetToast('MBTI 테스트 등록 성공!', 'success')
+				sweetToast('테스트 등록 완료', 'success')
 				test = {
 					title: '',
 					sub_title: '',
@@ -240,6 +241,18 @@
 					{:else}
 						<img src="/imgs/icon_add.svg" alt="이미지 추가" />
 					{/if}
+					{#if test.img_preview}
+						<img
+							class="img_remove"
+							src="/imgs/icon_remove.svg"
+							alt="이미지 삭제"
+							on:click={(event) => {
+								event.preventDefault()
+								test.img_preview = ''
+								test.img_url = ''
+							}}
+						/>
+					{/if}
 				</div>
 				<input
 					type="file"
@@ -249,17 +262,6 @@
 					on:change={handleFileChange}
 				/>
 			</label>
-			{#if test.img_preview}
-				<img
-					class="img_remove"
-					src="/imgs/icon_remove.svg"
-					alt="이미지 삭제"
-					on:click={() => {
-						test.img_preview = ''
-						test.img_url = ''
-					}}
-				/>
-			{/if}
 			<div class="test_details">
 				<label for="title">제목</label>
 				<input type="text" id="title" class="title" bind:value={test.title} />
@@ -366,6 +368,7 @@
 		width: 50%;
 	}
 	.image_upload {
+		position: relative;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -536,7 +539,7 @@
 	.img_remove {
 		position: absolute;
 		top: 2%;
-		right: 38.5%;
+		right: 2%;
 		cursor: pointer;
 	}
 

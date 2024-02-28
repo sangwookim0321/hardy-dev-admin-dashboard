@@ -25,7 +25,7 @@ async function checkAdminPermission(authHeader) {
 }
 
 export async function GET({ request, params }) {
-	// 테스트 상세 조회 API
+	// 능력고사 테스트 상세 조회 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -95,37 +95,63 @@ export async function PUT({ request, params }) {
 		const questions = JSON.parse(formData.get('questions'))
 
 		// 유효성 검사
-		if (!title || !sub_title || !description || !imgFile) {
+		if (!title || !sub_title || !description) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
 
-		// 기존 이미지 삭제
-		const existingImgPath = oldImageUrl.replace('admin_dashboard_bucket/', '')
+		// 데이터베이스에서 현재 테스트의 img_url 조회
+		const { data: testData, error: testError } = await supabase
+			.from('ability_tests')
+			.select('img_url')
+			.eq('id', id)
+			.single()
 
-		if (existingImgPath) {
-			const { error: deleteError } = await supabase.storage
-				.from('admin_dashboard_bucket')
-				.remove([existingImgPath])
+		if (testError || !testData) {
+			throw { status: 404, message: '테스트 이미지를 찾을 수 없습니다.' }
+		}
 
-			if (deleteError) {
-				throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
+		const currentImgUrl = testData.img_url
+
+		let img_path = ''
+
+		// 이미지 파일이 제공되었는지 확인
+		if (imgFile && typeof imgFile !== 'string') {
+			// imgFile이 파일 객체인 경우
+			// 기존 이미지 삭제 로직
+			if (oldImageUrl) {
+				// oldImageUrl 존재 여부만 확인
+				const existingImgPath = oldImageUrl.replace('admin_dashboard_bucket/', '')
+
+				if (existingImgPath) {
+					const { error: deleteError } = await supabase.storage
+						.from('admin_dashboard_bucket')
+						.remove([existingImgPath])
+
+					if (deleteError) {
+						console.error('기존 이미지 삭제 실패:', deleteError)
+						throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
+					}
+				}
 			}
+
+			// 새 이미지 업로드 로직
+			const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+				.from('admin_dashboard_bucket')
+				.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
+					cacheControl: '3600',
+					upsert: false
+				})
+
+			if (imgUploadError) {
+				console.error('이미지 업로드 실패:', imgUploadError)
+				throw { status: 400, message: '이미지 업로드 실패', error: imgUploadError }
+			}
+
+			img_path = imgUploadData.fullPath // 새 이미지 경로로 업데이트
+		} else {
+			// 이미지 변경 없음: 기존 이미지 URL을 그대로 사용
+			img_path = currentImgUrl
 		}
-
-		// 이미지 업로드
-		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
-			.from('admin_dashboard_bucket')
-			.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
-				cacheControl: '3600',
-				upsert: false
-			})
-
-		if (imgUploadError) {
-			console.error('이미지 업로드 실패:', imgUploadError)
-			throw { status: 400, message: '이미지 업로드 실패', error: imgUploadError }
-		}
-
-		const img_path = imgUploadData.fullPath
 
 		// 테스트 정보 수정
 		const { data, error } = await supabase
@@ -147,19 +173,42 @@ export async function PUT({ request, params }) {
 
 		const testId = data[0].id
 
-		// 질문 정보 수정
-		const questionsWithTestId = questions.map((question) => ({
-			...question,
-			test_id: testId
-		}))
+		// 기존 질문 업데이트
+		for (const question of questions) {
+			if (question.id) {
+				const { error: updateError } = await supabase
+					.from('ability_questions')
+					.update({
+						question_etc: question.question_etc,
+						question_list: question.question_list,
+						question_name: question.question_name,
+						question_number: question.question_number,
+						answer: question.answer,
+						score: question.score,
+						test_id: testId
+					})
+					.eq('id', question.id)
 
-		const { error: questionsUpdateError } = await supabase
-			.from('ability_questions')
-			.upsert(questionsWithTestId)
+				if (updateError) {
+					throw { status: 400, message: '질문 정보 업데이트 실패', error: updateError }
+				}
+			}
+		}
 
-		if (questionsUpdateError) {
-			console.error('질문 정보 수정 실패:', questionsUpdateError)
-			throw { status: 400, message: '질문 정보 수정 실패', error: questionsUpdateError }
+		// 새 질문 추가
+		const newQuestions = questions
+			.filter((q) => !q.id)
+			.map((question) => ({
+				...question,
+				test_id: testId
+			}))
+
+		if (newQuestions.length > 0) {
+			const { error: insertError } = await supabase.from('ability_questions').insert(newQuestions)
+
+			if (insertError) {
+				throw { status: 400, message: '새 질문 추가 실패', error: insertError }
+			}
 		}
 
 		return json({ message: '테스트가 성공적으로 수정되었습니다.', status: 200 }, { status: 200 })

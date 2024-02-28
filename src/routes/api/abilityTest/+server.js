@@ -37,8 +37,8 @@ export async function GET({ request }) {
 		const views = url.searchParams.get('views') // 높은순, 낮은순
 		const disclosure = url.searchParams.get('disclosure') // 공개, 비공개
 		const search = url.searchParams.get('search') // 검색어(ID, 이름)
-		const page = parseInt(url.searchParams.get('page') || '1', 10) // 페이지
-		const limit = parseInt(url.searchParams.get('limit') || '5', 10) // 페이지당 표시할 개수
+		const page = parseInt(url.searchParams.get('page') || 1) // 페이지
+		const limit = parseInt(url.searchParams.get('limit') || 5) // 페이지당 표시할 개수
 		const offset = (page - 1) * limit
 
 		let query = supabase.from('ability_tests').select('*', { count: 'exact' })
@@ -66,15 +66,15 @@ export async function GET({ request }) {
 		if (views) {
 			query = query.order('count', { ascending: views === '높은순' })
 		} else {
-			// 다른 정렬 조건이 지정되지 않았을 때 기본적으로 ID 기준 내림차순으로 정렬
-			query = query.order('id', { ascending: true })
+			// 다른 정렬 조건이 지정되지 않았을 때 기본적으로 created_at 기준 내림차순으로 정렬
+			query = query.order('created_at', { ascending: true })
 		}
 
 		// 결과 조회
 		const { data, error, count } = await query.range(offset, offset + limit - 1)
 
 		if (error) {
-			throw { status: 400, message: '테스트 정보 조회 실패', error }
+			throw { status: 400, message: '테스트 정보 조회 실패', error: error }
 		}
 
 		// 집계 데이터 조회
@@ -86,7 +86,7 @@ export async function GET({ request }) {
 			throw {
 				status: 400,
 				message: '테스트 집계 조회 중 오류가 발생했습니다.',
-				totalDataError
+				error: totalDataError
 			}
 		}
 

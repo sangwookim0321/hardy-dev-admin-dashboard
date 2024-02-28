@@ -66,6 +66,7 @@
 			'AbilityTestList',
 			true,
 			(res) => {
+				console.log(res)
 				items = res.data.data
 				totalItems = res.data.total
 				subItems = res.data.totalData[0]
@@ -103,7 +104,8 @@
 			true,
 			async (res) => {
 				await getItem()
-				sweetToast('선택한 테스트를 삭제했습니다.', 'success')
+				sweetToast('테스트 삭제 완료', 'success')
+				checkboxStatus = []
 			},
 			(err) => {
 				console.log(err)
@@ -133,7 +135,7 @@
 			true,
 			(res) => {
 				getItem()
-				sweetToast(`${title}의 공개상태 변경에 성공했습니다.`, 'success')
+				sweetToast(`${title}의 공개상태 변경 완료`, 'success')
 			},
 			(err) => {
 				console.log(err)
@@ -157,12 +159,14 @@
 		currentPage = page
 		getItem()
 		goto(`/admin/abilityTest/list?page=${currentPage}`, { replaceState: true })
+		checkboxStatus = []
 	}
 
-	function updateQueryParams(param, value) {
+	async function updateQueryParams(param, value) {
 		const url = new URL(window.location)
 		url.searchParams.set(param, value)
-		goto(url.toString(), { replaceState: true })
+		await goto(url.toString(), { replaceState: true })
+		await getItem()
 	}
 
 	async function moveDetail(id) {

@@ -10,6 +10,24 @@
 
 	let email = 'pointjumpit@gmail.com'
 	let password = '!als970321!'
+	let emailFocused = false
+	let passwordFocused = false
+
+	function handleFocus(type) {
+		if (type === 'email') {
+			emailFocused = true
+		} else if (type === 'password') {
+			passwordFocused = true
+		}
+	}
+
+	function handleBlur(type) {
+		if (type === 'email' && email.length === 0) {
+			emailFocused = false
+		} else if (type === 'password' && password.length === 0) {
+			passwordFocused = false
+		}
+	}
 
 	function login() {
 		if (!email) {
@@ -80,11 +98,38 @@
 			<img class="main_logo_img" src="/imgs/main-logo-128.png" alt="main-logo" />
 		</div>
 		<span>Hardy Admin DashBoard</span>
-		<!-- form 태그 추가 -->
+
 		<form on:submit|preventDefault={login}>
 			<div>
-				<input type="email" placeholder="Email" bind:value={email} />
-				<input type="password" placeholder="Password" bind:value={password} />
+				<div style="position: relative;">
+					<input
+						type="email"
+						placeholder="Email"
+						bind:value={email}
+						on:focus={() => handleFocus('email')}
+						on:blur={() => handleBlur('email')}
+					/>
+					{#if !emailFocused && email.length === 0}
+						<img class="icon_input" src="/imgs/icon_email.svg" alt="email" />
+					{:else}
+						<img class="icon_input" src="/imgs/icon_email_focus.svg" alt="email" />
+					{/if}
+				</div>
+
+				<div style="position: relative;">
+					<input
+						type="password"
+						placeholder="Password"
+						bind:value={password}
+						on:focus={() => handleFocus('password')}
+						on:blur={() => handleBlur('password')}
+					/>
+					{#if !passwordFocused && password.length === 0}
+						<img class="icon_input" src="/imgs/icon_key.svg" alt="password" />
+					{:else}
+						<img class="icon_input" src="/imgs/icon_key_focus.svg" alt="password" />
+					{/if}
+				</div>
 				<button type="submit">LOGIN</button>
 			</div>
 		</form>
@@ -121,6 +166,19 @@
 		background-color: var(--main-bg-dark);
 		border-radius: 1rem;
 	}
+	.main_box div {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
+	}
+	.icon_input {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		transform: translateY(-50%);
+		width: 2rem;
+	}
 	span {
 		display: block;
 		margin: 1rem 0;
@@ -128,15 +186,9 @@
 		text-align: center;
 		color: var(--main-bg-white);
 	}
-	.main_box div {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		align-items: center;
-	}
 	input {
 		width: 80%;
-		padding: 0.5rem;
+		padding: 1.2rem 5rem;
 		margin: 0.5rem 0;
 		border: 1px solid var(--main-bg-lightGray);
 		border-radius: 0.5rem;
@@ -149,7 +201,7 @@
 	}
 	button {
 		width: 30%;
-		padding: 0.5rem;
+		padding: 1rem;
 		margin: 0.5rem 0;
 		border: none;
 		border-radius: 0.5rem;
@@ -183,6 +235,10 @@
 		input {
 			width: 90%;
 			font-size: 1.5rem;
+			padding-top: 1rem;
+			padding-bottom: 1rem;
+			padding-left: 4rem;
+			padding-right: 0;
 		}
 		button {
 			width: 40%;

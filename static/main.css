@@ -10,12 +10,16 @@
 	--main-bg-purple: #816bff;
 	--main-bg-darkPurple: #6f5cdd;
 	--main-bg-green: #28a745;
+	--main-bg-darkGreen: #4ead63;
 	--main-bg-red: #dc3545;
 	--main-bg-darkRed: #af2b39;
 	--main-bg-yellow: #ffc107;
 	--main-bg-blue: #007bff;
 	--main-bg-orange: #fd7e14;
 	--main-bg-cyan: #17a2b8;
+	--main-bg-darkCyan: #178899;
+	--main-bg-violet: #b223dd;
+	--main-bg-darkViolet: #9121b3;
 	--main-bg-white: #ffffff;
 
 	/* 폰트 사이즈 변수 정의 */
