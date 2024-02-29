@@ -173,39 +173,79 @@ export async function PUT({ request, params }) {
 
 		const testId = data[0].id
 
-		// 기존 질문 업데이트
-		for (const question of questions) {
-			if (question.id) {
-				const { error: updateError } = await supabase
-					.from('ability_questions')
-					.update({
-						question_etc: question.question_etc,
-						question_list: question.question_list,
-						question_name: question.question_name,
-						question_number: question.question_number,
-						answer: question.answer,
-						score: question.score,
-						test_id: testId
-					})
-					.eq('id', question.id)
+		// 질문 및 서브 이미지 처리
+		await Promise.all(
+			questions.map(async (question, index) => {
+				const fileKey = `sub_img_url_${index}`
+				const file = formData.get(fileKey)
+				let subImgPath = question.sub_img_url
 
-				if (updateError) {
-					throw { status: 400, message: '질문 정보 업데이트 실패', error: updateError }
+				if (file instanceof File) {
+					// 새 이미지 업로드 로직
+					const { data: uploadData, error: uploadError } = await supabase.storage
+						.from('admin_dashboard_bucket')
+						.upload(`abilityTest-sub-images/${Date.now()}_${file.name}`, file, {
+							cacheControl: '3600',
+							upsert: false
+						})
+
+					if (uploadError) {
+						throw {
+							status: 400,
+							message: `질문 ${index + 1}의 이미지 업로드 실패`,
+							error: uploadError
+						}
+					}
+
+					subImgPath = uploadData.Key // 업로드된 이미지의 경로
+
+					// 이전 이미지가 있으면 삭제
+					if (question.old_sub_img_url) {
+						const oldPath = question.old_sub_img_url.replace(
+							'https://aqnmhrbebgwoziqtyyns.supabase.co/storage/v1/object/public/admin_dashboard_bucket/',
+							''
+						)
+						await supabase.storage.from('admin_dashboard_bucket').remove([oldPath])
+					}
 				}
-			}
-		}
+
+				// 기존 질문 업데이트 또는 새 질문 추가
+				if (question.id) {
+					// 기존 질문 업데이트
+					const { error: updateError } = await supabase
+						.from('ability_questions')
+						.update({
+							question_etc: question.question_etc,
+							question_list: question.question_list,
+							question_name: question.question_name,
+							question_number: question.question_number,
+							answer: question.answer,
+							score: question.score,
+							sub_img_url: subImgPath, // 업로드된 새 이미지의 경로로 업데이트
+							test_id: testId // testId가 아닌 URL 파라미터에서 받은 id 사용
+						})
+						.eq('id', question.id)
+
+					if (updateError) {
+						throw { status: 400, message: '질문 정보 업데이트 실패', error: updateError }
+					}
+				}
+			})
+		)
 
 		// 새 질문 추가
 		const newQuestions = questions
 			.filter((q) => !q.id)
 			.map((question) => ({
 				...question,
-				test_id: testId
+				test_id: id, // URL 파라미터에서 받은 테스트 ID 사용
+				// 새 이미지 업로드 로직에서 설정된 sub_img_url 사용
+				sub_img_url: question.sub_img_url instanceof File ? subImgPath : question.sub_img_url
 			}))
 
+		// 새 질문이 있으면 데이터베이스에 추가
 		if (newQuestions.length > 0) {
 			const { error: insertError } = await supabase.from('ability_questions').insert(newQuestions)
-
 			if (insertError) {
 				throw { status: 400, message: '새 질문 추가 실패', error: insertError }
 			}

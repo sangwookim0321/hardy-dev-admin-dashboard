@@ -29,7 +29,9 @@
 				question_list: ['1.질문', '2.질문'],
 				question_etc: '기타설명설명',
 				answer: 2,
-				score: 10
+				score: 10,
+				sub_img_url: '',
+				sub_img_preview: ''
 			}
 		]
 	}
@@ -44,6 +46,20 @@
 				test.img_url = file
 			}
 		}
+		event.target.value = ''
+	}
+
+	function handleSubFileChange(event, index) {
+		const file = event.target.files[0]
+		if (file) {
+			let fileReader = new FileReader()
+			fileReader.readAsDataURL(file)
+			fileReader.onload = () => {
+				test.questions[index].sub_img_preview = fileReader.result
+				test.questions[index].sub_img_url = file
+			}
+		}
+		event.target.value = ''
 	}
 
 	function addQuestion() {
@@ -55,7 +71,9 @@
 				question_list: ['1.질문', '2.질문'],
 				question_etc: '',
 				answer: 0,
-				score: 0
+				score: 0,
+				sub_img_url: '',
+				sub_img_preview: ''
 			}
 		]
 		setTimeout(() => {
@@ -130,12 +148,24 @@
 			}
 		}
 
+		test.questions.forEach((item) => {
+			delete item.sub_img_preview
+		})
+
+		const questionsData = test.questions.map(({ sub_img_url, sub_img_preview, ...rest }) => rest)
+
 		let formData = new FormData()
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
 		formData.append('img', test.img_url)
-		formData.append('questions', JSON.stringify(test.questions))
+		formData.append('questions', JSON.stringify(questionsData))
+		test.questions.forEach((item, index) => {
+			if (item.sub_img_url instanceof File) {
+				formData.append(`sub_img_url_${index}`, item.sub_img_url)
+				console.log(item.sub_img_url)
+			}
+		})
 
 		await httpPostFormData(
 			endPoints.ABILITY_TEST,
@@ -157,7 +187,9 @@
 							question_list: ['', ''],
 							question_etc: '',
 							answer: 0,
-							score: 0
+							score: 0,
+							sub_img_url: '',
+							sub_img_preview: ''
 						}
 					]
 				}
@@ -296,6 +328,35 @@
 					<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
 					<hr />
 				</div>
+				<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
+				<label for={`sub_file_upload_${index}`} class="custom_file_upload">
+					<div style="cursor: pointer;" class="image_upload">
+						{#if question.sub_img_preview}
+							<img class="img_preview" src={question.sub_img_preview} alt="이미지" />
+						{:else}
+							<img src="/imgs/icon_add.svg" alt="이미지 추가" />
+						{/if}
+						{#if question.sub_img_preview}
+							<img
+								class="img_remove"
+								src="/imgs/icon_remove.svg"
+								alt="이미지 삭제"
+								on:click={(event) => {
+									event.preventDefault()
+									question.sub_img_preview = ''
+									question.sub_img_url = ''
+								}}
+							/>
+						{/if}
+					</div>
+					<input
+						type="file"
+						id={`sub_file_upload_${index}`}
+						style="display: none;"
+						class="file_upload"
+						on:change={(event) => handleSubFileChange(event, index)}
+					/>
+				</label>
 			{/each}
 			<button on:click={addQuestion}>질문 추가</button>
 		</div>

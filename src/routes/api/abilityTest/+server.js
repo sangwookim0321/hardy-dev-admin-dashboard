@@ -128,13 +128,14 @@ export async function POST({ request }) {
 		const description = formData.get('description')
 		const imgFile = formData.get('img')
 		const questions = JSON.parse(formData.get('questions'))
+		console.log(questions)
 
 		// 유효성 검사
 		if (!title || !sub_title || !description || !imgFile) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
 
-		// 이미지 업로드
+		// 메인 이미지 업로드
 		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 			.from('admin_dashboard_bucket')
 			.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
@@ -167,6 +168,31 @@ export async function POST({ request }) {
 		}
 
 		const testId = data[0].id
+
+		// 서브 이미지 업로드
+		await Promise.all(
+			questions.map(async (question, index) => {
+				const file = formData.get(`sub_img_url_${index}`)
+				if (file) {
+					const { data: subImgUploadData, error: subImgUploadError } = await supabase.storage
+						.from('admin_dashboard_bucket')
+						.upload(`abilityTest-sub-images/${Date.now()}_${file.name}`, file, {
+							cacheControl: '3600',
+							upsert: false
+						})
+
+					if (subImgUploadError) {
+						throw {
+							status: 400,
+							message: `질문 ${index + 1}의 이미지 업로드 실패`,
+							error: subImgUploadError
+						}
+					}
+
+					question.sub_img_url = subImgUploadData.fullPath
+				}
+			})
+		)
 
 		// 질문 정보 저장
 		const questionsWithTestId = questions.map((question) => ({
