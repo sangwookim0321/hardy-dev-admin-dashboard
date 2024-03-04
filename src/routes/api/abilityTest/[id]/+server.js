@@ -43,6 +43,7 @@ export async function GET({ request, params }) {
 			.from('ability_questions')
 			.select()
 			.eq('test_id', id)
+			.order('id', { ascending: true })
 
 		if (questionsError) {
 			throw {
@@ -93,6 +94,8 @@ export async function PUT({ request, params }) {
 		const imgFile = formData.get('img')
 		const oldImageUrl = formData.get('oldImageUrl')
 		const questions = JSON.parse(formData.get('questions'))
+
+		// console.log(questions)
 
 		// 유효성 검사
 		if (!title || !sub_title || !description) {
@@ -179,8 +182,15 @@ export async function PUT({ request, params }) {
 				const fileKey = `sub_img_url_${index}`
 				const file = formData.get(fileKey)
 				let subImgPath = question.sub_img_url
+				console.log(question.old_sub_img_url)
 
-				if (file instanceof File) {
+				if (question.isDelete) {
+					if (question.old_sub_img_url) {
+						const oldPath = question.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+						await supabase.storage.from('admin_dashboard_bucket').remove([oldPath])
+						subImgPath = null
+					}
+				} else if (file instanceof File) {
 					// 새 이미지 업로드 로직
 					const { data: uploadData, error: uploadError } = await supabase.storage
 						.from('admin_dashboard_bucket')
@@ -197,14 +207,11 @@ export async function PUT({ request, params }) {
 						}
 					}
 
-					subImgPath = uploadData.Key // 업로드된 이미지의 경로
+					subImgPath = uploadData.fullPath // 업로드된 이미지의 경로
 
 					// 이전 이미지가 있으면 삭제
 					if (question.old_sub_img_url) {
-						const oldPath = question.old_sub_img_url.replace(
-							'https://aqnmhrbebgwoziqtyyns.supabase.co/storage/v1/object/public/admin_dashboard_bucket/',
-							''
-						)
+						const oldPath = question.old_sub_img_url.replace('admin_dashboard_bucket/', '')
 						await supabase.storage.from('admin_dashboard_bucket').remove([oldPath])
 					}
 				}
@@ -222,7 +229,7 @@ export async function PUT({ request, params }) {
 							answer: question.answer,
 							score: question.score,
 							sub_img_url: subImgPath, // 업로드된 새 이미지의 경로로 업데이트
-							test_id: testId // testId가 아닌 URL 파라미터에서 받은 id 사용
+							test_id: testId
 						})
 						.eq('id', question.id)
 
@@ -238,9 +245,9 @@ export async function PUT({ request, params }) {
 			.filter((q) => !q.id)
 			.map((question) => ({
 				...question,
-				test_id: id, // URL 파라미터에서 받은 테스트 ID 사용
+				test_id: testId,
 				// 새 이미지 업로드 로직에서 설정된 sub_img_url 사용
-				sub_img_url: question.sub_img_url instanceof File ? subImgPath : question.sub_img_url
+				sub_img_url: question.sub_img_url instanceof File ? img_path : question.sub_img_url
 			}))
 
 		// 새 질문이 있으면 데이터베이스에 추가

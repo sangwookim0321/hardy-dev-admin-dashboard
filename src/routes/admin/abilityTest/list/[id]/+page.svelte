@@ -36,7 +36,8 @@
 				score: 10,
 				sub_img_url: '',
 				sub_img_preview: '',
-				old_sub_img_url: ''
+				old_sub_img_url: '',
+				isDelete: false
 			}
 		]
 	}
@@ -63,6 +64,7 @@
 			fileReader.onload = () => {
 				test.questions[index].sub_img_preview = fileReader.result
 				test.questions[index].sub_img_url = file
+				test.questions[index].isDelete = false
 			}
 		}
 		event.target.value = ''
@@ -79,7 +81,8 @@
 				answer: 0,
 				score: 0,
 				sub_img_url: '',
-				sub_img_preview: ''
+				sub_img_preview: '',
+				isDelete: false
 			}
 		]
 
@@ -166,6 +169,7 @@
 			}
 			if (item.old_sub_img_url) {
 				// 기존 서브 이미지 URL을 old_sub_img_url_${index}로 전송
+				console.log(item.old_sub_img_url)
 				formData.append(`old_sub_img_url_${index}`, item.old_sub_img_url)
 			}
 		})
@@ -178,10 +182,13 @@
 		formData.append('img', test.img_url)
 		formData.append('oldImageUrl', oldImageUrl)
 		formData.append('questions', JSON.stringify(questionsData))
+		console.log('formData', questionsData)
+
+		// isDelete 추가
 		test.questions.forEach((item, index) => {
 			if (item.sub_img_url instanceof File) {
 				formData.append(`sub_img_url_${index}`, item.sub_img_url)
-				console.log(item.sub_img_url)
+				console.log('sadas', item.sub_img_url)
 			}
 		})
 
@@ -234,7 +241,6 @@
 			`abilityTestDetail/${pageId}`,
 			true,
 			(res) => {
-				console.log(res.data.data)
 				test = res.data.data
 				oldImageUrl = res.data.data.img_url
 				setImageUrl(test.img_url)
@@ -422,6 +428,8 @@
 										event.preventDefault()
 										question.sub_img_preview = ''
 										question.sub_img_url = ''
+										question.isDelete = true
+										console.log(question)
 									}}
 								/>
 							{/if}
