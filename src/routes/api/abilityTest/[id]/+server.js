@@ -94,50 +94,31 @@ export async function PUT({ request, params }) {
 		const imgFile = formData.get('img')
 		const oldImageUrl = formData.get('oldImageUrl')
 		const questions = JSON.parse(formData.get('questions'))
-
-		// console.log(questions)
+		const deleteList = JSON.parse(formData.get('deleteList'))
+		let main_img_path = ''
 
 		// 유효성 검사
 		if (!title || !sub_title || !description) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
 
-		// 데이터베이스에서 현재 테스트의 img_url 조회
-		const { data: testData, error: testError } = await supabase
-			.from('ability_tests')
-			.select('img_url')
-			.eq('id', id)
-			.single()
+		// -----------------------------------------------------------------------------------
+		if (imgFile && imgFile instanceof File) {
+			// 이미지 파일이 존재할 경우 -> 메인 이미지 변경으로 간주
+			const existingImage = oldImageUrl.replace('admin_dashboard_bucket/', '')
 
-		if (testError || !testData) {
-			throw { status: 404, message: '테스트 이미지를 찾을 수 없습니다.' }
-		}
+			const { error: mainImgDeleteError } = await supabase.storage
+				.from('admin_dashboard_bucket')
+				.remove([existingImage])
 
-		const currentImgUrl = testData.img_url
-
-		let img_path = ''
-
-		// 이미지 파일이 제공되었는지 확인
-		if (imgFile && typeof imgFile !== 'string') {
-			// imgFile이 파일 객체인 경우
-			// 기존 이미지 삭제 로직
-			if (oldImageUrl) {
-				// oldImageUrl 존재 여부만 확인
-				const existingImgPath = oldImageUrl.replace('admin_dashboard_bucket/', '')
-
-				if (existingImgPath) {
-					const { error: deleteError } = await supabase.storage
-						.from('admin_dashboard_bucket')
-						.remove([existingImgPath])
-
-					if (deleteError) {
-						console.error('기존 이미지 삭제 실패:', deleteError)
-						throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
-					}
+			if (mainImgDeleteError) {
+				throw {
+					status: 400,
+					message: '기존 메인 이미지 삭제에 실패했습니다.',
+					error: mainImgDeleteError
 				}
 			}
 
-			// 새 이미지 업로드 로직
 			const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 				.from('admin_dashboard_bucket')
 				.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
@@ -146,116 +127,201 @@ export async function PUT({ request, params }) {
 				})
 
 			if (imgUploadError) {
-				console.error('이미지 업로드 실패:', imgUploadError)
-				throw { status: 400, message: '이미지 업로드 실패', error: imgUploadError }
+				throw {
+					status: 400,
+					message: '새로운 메인 이미지 업로드에 실패했습니다.',
+					error: imgUploadError
+				}
 			}
 
-			img_path = imgUploadData.fullPath // 새 이미지 경로로 업데이트
+			main_img_path = imgUploadData.fullPath
 		} else {
-			// 이미지 변경 없음: 기존 이미지 URL을 그대로 사용
-			img_path = currentImgUrl
+			// 이미지 파일이 존재하지 않을 경우 -> 메인 이미지 변경이 아닌 경우로 간주
+			main_img_path = oldImageUrl
 		}
 
-		// 테스트 정보 수정
 		const { data, error } = await supabase
 			.from('ability_tests')
-			.update({
-				title: title,
-				sub_title: sub_title,
-				description: description,
-				img_url: img_path,
-				updated_at: new Date()
-			})
+			.update({ title, sub_title, description, img_url: main_img_path, updated_at: new Date() })
 			.eq('id', id)
-			.select()
 
 		if (error) {
-			console.error('테스트 정보 수정 실패:', error)
-			throw { status: 400, message: '테스트 정보 수정 실패', error: error }
+			throw { status: 400, message: '테스트 수정에 실패했습니다.', error: error }
 		}
 
-		const testId = data[0].id
+		// -----------------------------------------------------------------------------------
 
-		// 질문 및 서브 이미지 처리
 		await Promise.all(
-			questions.map(async (question, index) => {
+			questions.map(async (item, index) => {
 				const fileKey = `sub_img_url_${index}`
 				const file = formData.get(fileKey)
-				let subImgPath = question.sub_img_url
-				console.log(question.old_sub_img_url)
+				let sub_img_path = ''
 
-				if (question.isDelete) {
-					if (question.old_sub_img_url) {
-						const oldPath = question.old_sub_img_url.replace('admin_dashboard_bucket/', '')
-						await supabase.storage.from('admin_dashboard_bucket').remove([oldPath])
-						subImgPath = null
+				if (item.isNew) {
+					// 신규 추가된 질문건
+					if (file && file instanceof File) {
+						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.upload(`abilityTest-sub-images/${Date.now()}_${file.name}`, file, {
+								cacheControl: '3600',
+								upsert: false
+							})
+
+						if (imgUploadError) {
+							throw {
+								status: 400,
+								message: '질문 이미지 업로드에 실패했습니다.',
+								error: imgUploadError
+							}
+						}
+
+						sub_img_path = imgUploadData.fullPath
 					}
-				} else if (file instanceof File) {
-					// 새 이미지 업로드 로직
-					const { data: uploadData, error: uploadError } = await supabase.storage
-						.from('admin_dashboard_bucket')
-						.upload(`abilityTest-sub-images/${Date.now()}_${file.name}`, file, {
-							cacheControl: '3600',
-							upsert: false
+
+					const { data: questionData, error: questionError } = await supabase
+						.from('ability_questions')
+						.insert({
+							test_id: id,
+							question_number: item.question_number,
+							question_name: item.question_name,
+							question_list: item.question_list,
+							question_etc: item.question_etc,
+							answer: item.answer,
+							score: item.score,
+							sub_img_url: sub_img_path
 						})
 
-					if (uploadError) {
-						throw {
-							status: 400,
-							message: `질문 ${index + 1}의 이미지 업로드 실패`,
-							error: uploadError
+					if (questionError) {
+						throw { status: 400, message: '질문 추가에 실패했습니다.', error: questionError }
+					}
+				} else if (item.id) {
+					// 기존 질문에 대한 처리
+					if (file && file instanceof File) {
+						if (item.old_sub_img_url) {
+							// 기존 이미지 삭제 로직 (기존 이미지 URL을 사용하여 삭제)
+							const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+
+							// 기존 이미지 삭제
+							const { error: subImgDeleteError } = await supabase.storage
+								.from('admin_dashboard_bucket')
+								.remove([existingSubImage])
+
+							if (subImgDeleteError) {
+								throw {
+									status: 400,
+									message: '기존 질문 이미지 삭제에 실패했습니다.',
+									error: subImgDeleteError
+								}
+							}
 						}
+
+						// 새 이미지 업로드
+						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.upload(`abilityTest-sub-images/${Date.now()}_${file.name}`, file, {
+								cacheControl: '3600',
+								upsert: false
+							})
+
+						if (imgUploadError) {
+							throw {
+								status: 400,
+								message: '질문 이미지 업로드에 실패했습니다.',
+								error: imgUploadError
+							}
+						}
+
+						sub_img_path = imgUploadData.fullPath
+					} else if (item.isImageDeleted && item.old_sub_img_url) {
+						// 이미지 삭제 경우: 기존 이미지 삭제
+						const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+						await supabase.storage.from('admin_dashboard_bucket').remove([existingSubImage])
+						sub_img_path = ''
+					} else {
+						// 이미지 그대로 유지: 기존 이미지 경로 사용
+						sub_img_path = item.old_sub_img_url
 					}
 
-					subImgPath = uploadData.fullPath // 업로드된 이미지의 경로
-
-					// 이전 이미지가 있으면 삭제
-					if (question.old_sub_img_url) {
-						const oldPath = question.old_sub_img_url.replace('admin_dashboard_bucket/', '')
-						await supabase.storage.from('admin_dashboard_bucket').remove([oldPath])
-					}
-				}
-
-				// 기존 질문 업데이트 또는 새 질문 추가
-				if (question.id) {
-					// 기존 질문 업데이트
-					const { error: updateError } = await supabase
+					// 질문 업데이트 로직 (sub_img_path를 포함하여 질문 정보 업데이트)
+					const { data: questionData, error: questionError } = await supabase
 						.from('ability_questions')
 						.update({
-							question_etc: question.question_etc,
-							question_list: question.question_list,
-							question_name: question.question_name,
-							question_number: question.question_number,
-							answer: question.answer,
-							score: question.score,
-							sub_img_url: subImgPath, // 업로드된 새 이미지의 경로로 업데이트
-							test_id: testId
+							question_number: item.question_number,
+							question_name: item.question_name,
+							question_list: item.question_list,
+							question_etc: item.question_etc,
+							answer: item.answer,
+							score: item.score,
+							sub_img_url: sub_img_path // 새로운 이미지 경로 또는 기존 이미지 경로
 						})
-						.eq('id', question.id)
+						.eq('id', item.id)
 
-					if (updateError) {
-						throw { status: 400, message: '질문 정보 업데이트 실패', error: updateError }
+					if (questionError) {
+						throw {
+							status: 400,
+							message: '질문 업데이트에 실패했습니다.',
+							error: questionError
+						}
 					}
 				}
 			})
 		)
 
-		// 새 질문 추가
-		const newQuestions = questions
-			.filter((q) => !q.id)
-			.map((question) => ({
-				...question,
-				test_id: testId,
-				// 새 이미지 업로드 로직에서 설정된 sub_img_url 사용
-				sub_img_url: question.sub_img_url instanceof File ? img_path : question.sub_img_url
-			}))
+		// -----------------------------------------------------------------------------------
 
-		// 새 질문이 있으면 데이터베이스에 추가
-		if (newQuestions.length > 0) {
-			const { error: insertError } = await supabase.from('ability_questions').insert(newQuestions)
-			if (insertError) {
-				throw { status: 400, message: '새 질문 추가 실패', error: insertError }
-			}
+		// 기존 질문 업데이트 및 신규 질문 추가 처리
+		await Promise.all(
+			questions.map(async (item, index) => {
+				// 여기에 질문 업데이트 및 추가 로직 구현
+			})
+		)
+
+		// 삭제할 질문 처리
+		if (deleteList && deleteList.length > 0) {
+			await Promise.all(
+				deleteList.map(async (id) => {
+					// 먼저 삭제할 질문의 sub_img_url을 조회
+					const { data: question, error: questionFetchError } = await supabase
+						.from('ability_questions')
+						.select('sub_img_url')
+						.eq('id', id)
+						.single()
+
+					if (questionFetchError) {
+						throw {
+							status: 400,
+							message: '삭제할 질문을 찾는 데 실패했습니다.',
+							error: questionFetchError
+						}
+					}
+
+					// 질문에 연결된 이미지가 있으면 스토리지에서 삭제
+					if (question.sub_img_url) {
+						const existingSubImage = question.sub_img_url.replace('admin_dashboard_bucket/', '')
+						const { error: subImgDeleteError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.remove([existingSubImage])
+
+						if (subImgDeleteError) {
+							throw {
+								status: 400,
+								message: '질문의 이미지 삭제에 실패했습니다.',
+								error: subImgDeleteError
+							}
+						}
+					}
+
+					// 질문 레코드 삭제
+					const { error: questionDeleteError } = await supabase
+						.from('ability_questions')
+						.delete()
+						.eq('id', id)
+
+					if (questionDeleteError) {
+						throw { status: 400, message: '질문 삭제에 실패했습니다.', error: questionDeleteError }
+					}
+				})
+			)
 		}
 
 		return json({ message: '테스트가 성공적으로 수정되었습니다.', status: 200 }, { status: 200 })

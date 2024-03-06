@@ -264,7 +264,7 @@
 					movePage()
 				}}
 			/>
-			<span>MBTI 테스트 상세</span>
+			<span style="color: var(--main-bg-violet);">MBTI 테스트 상세</span>
 		</div>
 
 		<div class="main_box">

@@ -17,19 +17,19 @@
 	})
 
 	let test = {
-		title: '테스트 타이틀',
-		sub_title: '테스트 서브 타이틀',
-		description: '설명설명',
+		title: '',
+		sub_title: '',
+		description: '',
 		img_url: '',
 		img_preview: '',
 		questions: [
 			{
 				question_number: 1,
-				question_name: '질문 이름',
-				question_list: ['1.질문', '2.질문'],
-				question_etc: '기타설명설명',
-				answer: 2,
-				score: 10,
+				question_name: '',
+				question_list: [],
+				question_etc: '',
+				answer: 0,
+				score: 0,
 				sub_img_url: '',
 				sub_img_preview: ''
 			}
@@ -163,7 +163,6 @@
 		test.questions.forEach((item, index) => {
 			if (item.sub_img_url instanceof File) {
 				formData.append(`sub_img_url_${index}`, item.sub_img_url)
-				console.log(item.sub_img_url)
 			}
 		})
 
@@ -292,6 +291,12 @@
 						class="question_name"
 						bind:value={question.question_name}
 					/>
+					<label for={`question_etc_${index}`}>기타 문제설명(선택사항)</label>
+					<textarea
+						id={`question_etc_${index}`}
+						class="question_etc"
+						bind:value={question.question_etc}
+					></textarea>
 					{#each question.question_list as option, index2}
 						<div class="question_list_box">
 							<label
@@ -315,18 +320,11 @@
 							bind:value={question.question_list[index2]}
 						/>
 					{/each}
-					<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
-					<label for={`question_etc_${index}`}>기타 문제설명</label>
-					<textarea
-						id={`question_etc_${index}`}
-						class="question_etc"
-						bind:value={question.question_etc}
-					></textarea>
+					<button on:click={() => addOption(index)}>옵션(객관식) 추가(최소2개 이상 필수)</button>
 					<label for={`answer_${index}`}>정답</label>
 					<input type="number" id={`answer_${index}`} class="answer" bind:value={question.answer} />
-					<label for={`score_${index}`}>배점</label>
+					<label for={`score_${index}`}>배점(선택사항)</label>
 					<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
-					<hr />
 				</div>
 				<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
 				<label for={`sub_file_upload_${index}`} class="custom_file_upload">
@@ -357,6 +355,7 @@
 						on:change={(event) => handleSubFileChange(event, index)}
 					/>
 				</label>
+				<hr />
 			{/each}
 			<button on:click={addQuestion}>질문 추가</button>
 		</div>
@@ -411,6 +410,8 @@
 	}
 	hr {
 		width: 100%;
+		height: 10px;
+		background-color: var(--main-bg-purple);
 		margin: 5rem 0;
 		border: 1px solid var(--main-bg-purple);
 	}
@@ -441,7 +442,7 @@
 	}
 	button {
 		margin: 1rem 0;
-		padding: 1rem 1.2rem;
+		padding: 1rem 4.5rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-lightGray);
@@ -458,7 +459,7 @@
 	}
 	.save_button {
 		margin-top: 3rem;
-		padding: 1rem 6rem;
+		padding: 1.2rem 6rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-purple);
@@ -522,7 +523,7 @@
 			width: 100%;
 		}
 		.save_button {
-			padding: 1rem 4rem;
+			padding: 1.2rem 6rem;
 		}
 		.custom_file_upload {
 			width: 100%;

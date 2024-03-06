@@ -37,11 +37,12 @@
 				sub_img_url: '',
 				sub_img_preview: '',
 				old_sub_img_url: '',
-				isDelete: false
+				isImageDeleted: false
 			}
 		]
 	}
 	let oldImageUrl = ''
+	let deleteList = []
 
 	function handleFileChange(event) {
 		const file = event.target.files[0]
@@ -64,7 +65,7 @@
 			fileReader.onload = () => {
 				test.questions[index].sub_img_preview = fileReader.result
 				test.questions[index].sub_img_url = file
-				test.questions[index].isDelete = false
+				test.questions[index].isImageDeleted = false
 			}
 		}
 		event.target.value = ''
@@ -82,7 +83,7 @@
 				score: 0,
 				sub_img_url: '',
 				sub_img_preview: '',
-				isDelete: false
+				isNew: true
 			}
 		]
 
@@ -106,15 +107,17 @@
 		}, 100)
 	}
 
-	function removeField(index, index2, type) {
+	function removeField(index, index2, type, id) {
 		if (type === 'option') {
 			test.questions[index].question_list.splice(index2, 1)
-
 			test = { ...test }
 		} else if (type === 'question') {
 			test.questions.splice(index, 1)
 
 			test = { ...test }
+			if (id) {
+				deleteList.push(id)
+			}
 		}
 	}
 
@@ -162,35 +165,36 @@
 
 		let formData = new FormData()
 
-		test.questions.forEach((item, index) => {
-			delete item.sub_img_preview
-			if (item.sub_img_url instanceof File) {
-				formData.append(`sub_img_url_${index}`, item.sub_img_url)
-			}
-			if (item.old_sub_img_url) {
-				// 기존 서브 이미지 URL을 old_sub_img_url_${index}로 전송
-				console.log(item.old_sub_img_url)
-				formData.append(`old_sub_img_url_${index}`, item.old_sub_img_url)
-			}
-		})
-
-		const questionsData = test.questions.map(({ sub_img_url, sub_img_preview, ...rest }) => rest)
-
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
-		formData.append('img', test.img_url)
+		if (test.img_url instanceof File) {
+			formData.append('img', test.img_url)
+		}
 		formData.append('oldImageUrl', oldImageUrl)
-		formData.append('questions', JSON.stringify(questionsData))
-		console.log('formData', questionsData)
+		formData.append('deleteList', JSON.stringify(deleteList))
 
-		// isDelete 추가
-		test.questions.forEach((item, index) => {
-			if (item.sub_img_url instanceof File) {
-				formData.append(`sub_img_url_${index}`, item.sub_img_url)
-				console.log('sadas', item.sub_img_url)
+		const questionsData = test.questions.map((item, index) => {
+			const { sub_img_url, isNew, ...rest } = item
+
+			// 서브 이미지 파일이 있는 경우 formData 에 파일 추가
+			if (sub_img_url instanceof File) {
+				formData.append(`sub_img_url_${index}`, sub_img_url)
+			}
+
+			// 기존 서브 이미지 URL 전송 (수정 안됐을 경우)
+			if (item.old_sub_img_url && !(sub_img_url instanceof File)) {
+				formData.append(`old_sub_img_url_${index}`, item.old_sub_img_url)
+			}
+
+			if (isNew) {
+				return { ...rest, isNew: true }
+			} else {
+				return { ...rest, id: item.id }
 			}
 		})
+
+		formData.append('questions', JSON.stringify(questionsData))
 
 		await httpPutFormData(
 			`${endPoints.ABILITY_TEST}/${pageId}`,
@@ -202,7 +206,7 @@
 				getItem()
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -257,7 +261,7 @@
 				test.img_url = ''
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -350,7 +354,7 @@
 								class="remove_img"
 								src="/imgs/icon_remove.svg"
 								alt="remove"
-								on:click={() => removeField(index, null, 'question')}
+								on:click={() => removeField(index, null, 'question', question.id)}
 							/>
 						{/if}
 					</div>
@@ -370,6 +374,12 @@
 							class="question_name"
 							bind:value={question.question_name}
 						/>
+						<label for={`question_etc_${index}`}>기타 문제설명(선택사항)</label>
+						<textarea
+							id={`question_etc_${index}`}
+							class="question_etc"
+							bind:value={question.question_etc}
+						></textarea>
 						{#each question.question_list as option, index2}
 							<div class="question_list_box">
 								<label
@@ -381,7 +391,7 @@
 										class="remove_img"
 										src="/imgs/icon_remove.svg"
 										alt="remove"
-										on:click={() => removeField(index, index2, 'option')}
+										on:click={() => removeField(index, index2, 'option', null)}
 									/>
 								{/if}
 							</div>
@@ -393,13 +403,7 @@
 								bind:value={question.question_list[index2]}
 							/>
 						{/each}
-						<button on:click={() => addOption(index)}>옵션(객관식) 추가</button>
-						<label for={`question_etc_${index}`}>기타 문제설명</label>
-						<textarea
-							id={`question_etc_${index}`}
-							class="question_etc"
-							bind:value={question.question_etc}
-						></textarea>
+						<button on:click={() => addOption(index)}>옵션(객관식) 추가(최소2개 이상 필수)</button>
 						<label for={`answer_${index}`}>정답</label>
 						<input
 							type="number"
@@ -407,9 +411,8 @@
 							class="answer"
 							bind:value={question.answer}
 						/>
-						<label for={`score_${index}`}>배점</label>
+						<label for={`score_${index}`}>배점(선택사항)</label>
 						<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
-						<hr />
 					</div>
 					<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
 					<label for={`sub_file_upload_${index}`} class="custom_file_upload">
@@ -428,8 +431,7 @@
 										event.preventDefault()
 										question.sub_img_preview = ''
 										question.sub_img_url = ''
-										question.isDelete = true
-										console.log(question)
+										question.isImageDeleted = true
 									}}
 								/>
 							{/if}
@@ -442,6 +444,7 @@
 							on:change={(event) => handleSubFileChange(event, index)}
 						/>
 					</label>
+					<hr />
 				{/each}
 				<button on:click={addQuestion}>질문 추가</button>
 			</div>
@@ -497,8 +500,9 @@
 	}
 	hr {
 		width: 100%;
+		height: 10px;
+		background-color: var(--main-bg-purple);
 		margin: 5rem 0;
-		border: 1px solid var(--main-bg-purple);
 	}
 	input {
 		margin: 2rem 0;
@@ -527,7 +531,7 @@
 	}
 	button {
 		margin: 1rem 0;
-		padding: 1rem 1.2rem;
+		padding: 1rem 5rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-lightGray);
@@ -544,7 +548,7 @@
 	}
 	.save_button {
 		margin-top: 3rem;
-		padding: 1rem 6rem;
+		padding: 1.2rem 6rem;
 		border: none;
 		border-radius: 10px;
 		background-color: var(--main-bg-purple);
@@ -608,7 +612,7 @@
 			width: 100%;
 		}
 		.save_button {
-			padding: 1rem 4rem;
+			padding: 1.2rem 6rem;
 		}
 		.custom_file_upload {
 			width: 100%;

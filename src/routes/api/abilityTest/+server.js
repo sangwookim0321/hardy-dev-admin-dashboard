@@ -283,8 +283,32 @@ export async function DELETE({ request }) {
 			return json({ message: '삭제할 이미지 경로를 보내주세요.', status: 400 }, { status: 400 })
 		}
 
-		const existingImgPath = oldImagePaths.map((path) => path.replace('admin_dashboard_bucket/', ''))
+		// 질문의 서브 이미지 URL 조회
+		const { data: questions, error: questionsFetchError } = await supabase
+			.from('ability_questions')
+			.select('sub_img_url')
+			.in('test_id', ids)
 
+		if (questionsFetchError) {
+			console.error('질문 조회 실패:', questionsFetchError)
+			throw { status: 400, message: '질문 조회 실패', error: questionsFetchError }
+		}
+
+		// 서브 이미지 URL 추출 및 스토리지에서 삭제
+		const subImgUrls = questions.map((q) => q.sub_img_url).filter((url) => url)
+		const existingSubImgPaths = subImgUrls.map((url) => url.replace('admin_dashboard_bucket/', ''))
+		if (existingSubImgPaths.length > 0) {
+			const { error: subImgDeleteError } = await supabase.storage
+				.from('admin_dashboard_bucket')
+				.remove(existingSubImgPaths)
+
+			if (subImgDeleteError) {
+				console.error('서브 이미지 삭제 실패:', subImgDeleteError)
+				throw { status: 400, message: '서브 이미지 삭제 실패', error: subImgDeleteError }
+			}
+		}
+
+		// 질문 삭제
 		const { error: questionsDeleteError } = await supabase
 			.from('ability_questions')
 			.delete()
@@ -301,6 +325,8 @@ export async function DELETE({ request }) {
 			console.error('테스트 삭제 실패:', testsDeleteError)
 			throw { status: 400, message: '테스트 삭제 실패', error: testsDeleteError }
 		}
+
+		const existingImgPath = oldImagePaths.map((path) => path.replace('admin_dashboard_bucket/', ''))
 
 		const { error: imgDeleteError } = await supabase.storage
 			.from('admin_dashboard_bucket')

@@ -229,7 +229,7 @@
 <main>
 	<div class="main_top_box">
 		<img src="/imgs/icon_left.svg" alt="icon" />
-		<span>MBTI 테스트 추가</span>
+		<span style="color: var(--main-bg-violet);">MBTI 테스트 추가</span>
 	</div>
 
 	<div class="main_box">
