@@ -128,7 +128,6 @@ export async function POST({ request }) {
 		const description = formData.get('description')
 		const imgFile = formData.get('img')
 		const questions = JSON.parse(formData.get('questions'))
-		console.log(questions)
 
 		// 유효성 검사
 		if (!title || !sub_title || !description || !imgFile) {

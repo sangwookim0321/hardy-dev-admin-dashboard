@@ -193,7 +193,7 @@
 				getItem()
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -227,7 +227,7 @@
 				test.img_url = ''
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {

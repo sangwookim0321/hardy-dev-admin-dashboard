@@ -71,7 +71,7 @@
 				subItems = res.data.totalData[0]
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -107,7 +107,7 @@
 				checkboxStatus = [] // 삭제 후 체크박스 초기화
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -137,7 +137,7 @@
 				sweetToast(`${title}의 공개상태 변경 완료`, 'success')
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {

@@ -29,6 +29,15 @@ export async function GET({ request }) {
 
 	try {
 		await checkAdminPermission(authHeader)
+
+		const { data, error } = await supabase.from('ability_tests_result').select('*')
+
+		if (error) {
+			console.error('테스트 결과 조회 실패:', error)
+			throw { status: 400, message: '테스트 결과 조회 실패', error }
+		}
+
+		return json({ data: data, message: '테스트 결과 조회 성공', status: 200 }, { status: 200 })
 	} catch (err) {
 		console.error('서버 오류:', err)
 		return json(

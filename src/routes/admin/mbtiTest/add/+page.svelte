@@ -208,7 +208,7 @@
 				}
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {

@@ -20,8 +20,8 @@
 			title: '능력고사 테스트',
 			submenu: [
 				{ path: '/admin/abilityTest/add', label: '등록' },
-				{ path: '/admin/abilityTest/result', label: '결과' },
-				{ path: '/admin/abilityTest/list', label: '목록' }
+				{ path: '/admin/abilityTest/list', label: '목록' },
+				{ path: '/admin/abilityTest/result', label: '결과' }
 			]
 		},
 		{
@@ -59,7 +59,6 @@
 		await refresh()
 
 		refreshInterval = setInterval(async () => {
-			console.log('refresh')
 			await refresh()
 		}, 3600000)
 	})
@@ -104,7 +103,7 @@
 				sessionStorage.setItem('accessToken', res.data.accessToken)
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {

@@ -57,7 +57,7 @@
 				sweetToast('로그인 되었습니다!', 'success')
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
