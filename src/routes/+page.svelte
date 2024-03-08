@@ -175,7 +175,7 @@
 	.icon_input {
 		position: absolute;
 		top: 50%;
-		left: 0;
+		left: 1.5rem;
 		transform: translateY(-50%);
 		width: 2rem;
 	}
@@ -187,7 +187,7 @@
 		color: var(--main-bg-white);
 	}
 	input {
-		width: 80%;
+		width: 100%;
 		padding: 1.2rem 5rem;
 		margin: 0.5rem 0;
 		border: 1px solid var(--main-bg-lightGray);
