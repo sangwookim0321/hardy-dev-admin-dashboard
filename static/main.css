@@ -71,6 +71,10 @@ tr {
 	border-bottom: 1px solid var(--main-bg-lightGray-02);
 }
 
+.wrap {
+	width: 100%;
+}
+
 /* 스크롤바 전체 스타일 */
 textarea::-webkit-scrollbar {
     width: 6px; /* 스크롤바의 너비 */

@@ -20,7 +20,7 @@
 			title: '능력고사 테스트',
 			submenu: [
 				{ path: '/admin/abilityTest/add', label: '등록' },
-				// { path: '/admin/abilityTest/modify', label: '수정' },
+				{ path: '/admin/abilityTest/result', label: '결과' },
 				{ path: '/admin/abilityTest/list', label: '목록' }
 			]
 		},

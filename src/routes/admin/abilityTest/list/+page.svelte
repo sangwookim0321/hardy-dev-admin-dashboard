@@ -66,13 +66,12 @@
 			'AbilityTestList',
 			true,
 			(res) => {
-				console.log(res)
 				items = res.data.data
 				totalItems = res.data.total
 				subItems = res.data.totalData[0]
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -108,7 +107,7 @@
 				checkboxStatus = []
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
@@ -138,7 +137,7 @@
 				sweetToast(`${title}의 공개상태 변경 완료`, 'success')
 			},
 			(err) => {
-				console.log(err)
+				console.error(err)
 				statusHandler(
 					err.status,
 					() => {
