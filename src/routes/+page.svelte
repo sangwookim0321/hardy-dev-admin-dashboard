@@ -229,11 +229,14 @@
 			width: 100px;
 			height: 100px;
 		}
+		.icon_input {
+			left: 1rem;
+		}
 		span {
 			font-size: 1.5rem;
 		}
 		input {
-			width: 90%;
+			width: 100%;
 			font-size: 1.5rem;
 			padding-top: 1rem;
 			padding-bottom: 1rem;
