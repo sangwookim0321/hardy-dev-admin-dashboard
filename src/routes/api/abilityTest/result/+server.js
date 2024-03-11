@@ -27,17 +27,28 @@ async function checkAdminPermission(authHeader) {
 export async function GET({ request }) {
 	const authHeader = request.headers.get('authorization')
 
+	const url = new URL(request.url)
+	const page = parseInt(url.searchParams.get('page') || 1) // 페이지
+	const limit = parseInt(url.searchParams.get('limit') || 10) // 페이지당 표시할 개수
+	const offset = (page - 1) * limit
+
 	try {
 		await checkAdminPermission(authHeader)
 
-		const { data, error } = await supabase.from('ability_tests_result').select('*')
+		const { data, error, count } = await supabase
+			.from('ability_tests_result')
+			.select('*', { count: 'exact' })
+			.range(offset, offset + limit - 1)
 
 		if (error) {
 			console.error('테스트 결과 조회 실패:', error)
 			throw { status: 400, message: '테스트 결과 조회 실패', error }
 		}
 
-		return json({ data: data, message: '테스트 결과 조회 성공', status: 200 }, { status: 200 })
+		return json(
+			{ data: data, total: count, message: '테스트 결과 조회 성공', status: 200 },
+			{ status: 200 }
+		)
 	} catch (err) {
 		console.error('서버 오류:', err)
 		return json(

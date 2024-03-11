@@ -8,6 +8,7 @@
 	import { formatDate, formatComma } from '$lib/util/filter'
 	import { showToast } from '$lib/util/alerts'
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
+	import InfiniteScroll from '$lib/components/InfiniteScroll.svelte'
 	import useApi from '$lib/util/api'
 
 	const { httpGet, endPoints, statusHandler } = useApi()
@@ -15,6 +16,9 @@
 	let currentPath
 
 	let items = []
+	let pageNum = 1
+	let limit = 5
+	let total = 0
 	let isMobile = false
 
 	if (browser) {
@@ -43,32 +47,50 @@
 		isMobile = window.innerWidth <= 768
 	}
 
+	async function fetchNextPage() {
+		if (items.length >= total) {
+			return
+		}
+		pageNum += 1
+		await getItem()
+	}
+
 	async function getItem() {
-		await httpGet(
-			endPoints.ABILITY_TEST_RESULT,
-			'abilityTestResult',
-			true,
-			(res) => {
-				items = res.data.data
-			},
-			(err) => {
-				console.error(err)
-				statusHandler(
-					err.status,
-					() => {
-						sweetToast(err.message, 'error')
-					},
-					async () => {
-						await goto('/')
-						sweetToast(err.message, 'error')
+		// 첫 페이지 로딩 또는 아직 로드할 데이터가 더 있는 경우에만 요청
+		if (pageNum === 1 || items.length < total) {
+			const params = new URLSearchParams({ page: pageNum, limit: limit })
+
+			await httpGet(
+				`${endPoints.ABILITY_TEST_RESULT}?${params}`,
+				'abilityTestResult',
+				true,
+				(res) => {
+					if (res.data && res.data.data) {
+						items = [...items, ...res.data.data]
+						total = res.data.total
 					}
-				)
-			},
-			() => {},
-			() => {
-				storeLoadingState.set(false)
-			}
-		)
+				},
+				(err) => {
+					console.error(err)
+					statusHandler(
+						err.status,
+						() => {
+							sweetToast(err.message, 'error')
+						},
+						async () => {
+							await goto('/')
+							sweetToast(err.message, 'error')
+						}
+					)
+				},
+				() => {},
+				() => {
+					storeLoadingState.set(false)
+				}
+			)
+		} else {
+			console.log('data already loaded')
+		}
 	}
 </script>
 
@@ -139,6 +161,7 @@
 				{/each}
 			</div>
 		</div>
+		<InfiniteScroll fetchNext={fetchNextPage} />
 	</main>
 {/if}
 
