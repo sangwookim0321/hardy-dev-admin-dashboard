@@ -159,9 +159,9 @@
 						</div>
 					</div>
 				{/each}
+				<InfiniteScroll fetchNext={fetchNextPage} />
 			</div>
 		</div>
-		<InfiniteScroll fetchNext={fetchNextPage} />
 	</main>
 {/if}
 
