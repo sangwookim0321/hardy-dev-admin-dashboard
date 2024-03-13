@@ -133,12 +133,12 @@ textarea::-webkit-scrollbar-thumb:hover {
 
 .swal2-styled.swal2-confirm {
 	padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-	font-size: 1.5rem !important; /* 확인 버튼 폰트 크기 조정 */
+	font-size: 2rem !important; /* 확인 버튼 폰트 크기 조정 */
 }
 
 .swal2-styled.swal2-cancel {
-	padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
-	font-size: 1.5rem !important; /* 취소 버튼 폰트 크기 조정 */
+	padding: 0.5rem 1rem !important; /* 취소 버튼 패딩 조정 */
+	font-size: 2rem !important; /* 취소 버튼 폰트 크기 조정 */
 }
 
 .light-pagination-nav .pagination-nav {
@@ -163,12 +163,12 @@ textarea::-webkit-scrollbar-thumb:hover {
 
 	.swal2-styled.swal2-confirm {
 		padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-		font-size: 1.2rem !important; /* 확인 버튼 폰트 크기 조정 */
+		font-size: 1.8rem !important; /* 확인 버튼 폰트 크기 조정 */
 	}
 
 	.swal2-styled.swal2-cancel {
-		padding: 0.375rem 0.75rem !important; /* 취소 버튼 패딩 조정 */
-		font-size: 1.2rem !important; /* 취소 버튼 폰트 크기 조정 */
+		padding: 0.5rem 1rem !important; /* 취소 버튼 패딩 조정 */
+		font-size: 1.8rem !important; /* 취소 버튼 폰트 크기 조정 */
 	}
 	.table_box {
 		overflow-x: scroll;

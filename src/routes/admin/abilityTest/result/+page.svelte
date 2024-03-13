@@ -6,12 +6,13 @@
 	import { goto } from '$app/navigation'
 	import { storePath, storeLoadingState } from '$lib/store/store'
 	import { formatDate, formatComma } from '$lib/util/filter'
-	import { showToast } from '$lib/util/alerts'
+	import { showToast, showAlert } from '$lib/util/alerts'
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
+	import LoadingSpinnerCircle from '$lib/components/LoadingSpinnerCircle.svelte'
 	import InfiniteScroll from '$lib/components/InfiniteScroll.svelte'
 	import useApi from '$lib/util/api'
 
-	const { httpGet, endPoints, statusHandler } = useApi()
+	const { httpGet, httpDelete, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
@@ -20,6 +21,8 @@
 	let limit = 5
 	let total = 0
 	let isMobile = false
+	let isLoading = false
+	let timer
 
 	if (browser) {
 		onMount(() => {
@@ -43,6 +46,18 @@
 		})
 	}
 
+	function sweetAlert(title, text, icon, isCancel, confirmButtonText, cancelButtonText, callback) {
+		showAlert({
+			title: title,
+			text: text,
+			icon: icon,
+			isCancel: isCancel,
+			confirmButtonText: confirmButtonText,
+			cancelButtonText: cancelButtonText,
+			callback: callback
+		})
+	}
+
 	function checkWindowSize() {
 		isMobile = window.innerWidth <= 768
 	}
@@ -59,6 +74,7 @@
 		// 첫 페이지 로딩 또는 아직 로드할 데이터가 더 있는 경우에만 요청
 		if (pageNum === 1 || items.length < total) {
 			const params = new URLSearchParams({ page: pageNum, limit: limit })
+			isLoading = true
 
 			await httpGet(
 				`${endPoints.ABILITY_TEST_RESULT}?${params}`,
@@ -86,11 +102,62 @@
 				() => {},
 				() => {
 					storeLoadingState.set(false)
+					isLoading = false
 				}
 			)
 		} else {
 			console.log('data already loaded')
 		}
+	}
+
+	async function deleteItem(id) {
+		console.log(id)
+		await httpDelete(
+			`${endPoints.ABILITY_TEST_RESULT}?id=${id}`,
+			'abilityTestResult',
+			null,
+			true,
+			async (res) => {
+				items = items.filter((item) => item.id !== id)
+				sweetToast('테스트 결과 삭제 완료', 'success')
+				console.log('success delete', res, id)
+			},
+			(err) => {
+				console.error(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
+					}
+				)
+			},
+			() => {},
+			() => {}
+		)
+	}
+
+	function onTouchStart(id, test_name, username) {
+		timer = setTimeout(() => {
+			sweetAlert(
+				`${test_name}`,
+				`'${username}'님의 테스트 결과를 삭제 하시겠습니까?`,
+				'info',
+				true,
+				'확인',
+				'취소',
+				() => {
+					deleteItem(id)
+				}
+			)
+		}, 800)
+	}
+
+	function onTouchEnd() {
+		clearTimeout(timer)
 	}
 </script>
 
@@ -100,7 +167,7 @@
 	<main>
 		<div class="main_top_box">
 			<img src="/imgs/icon_left.svg" alt="icon" />
-			<span>능력고사 테스트 결과 리스트</span>
+			<span>능력고사 테스트 결과 리스트({total}개)</span>
 		</div>
 
 		<div class="main_box">
@@ -108,6 +175,7 @@
 			<div class="list_box">
 				{#if !isMobile}
 					<div class="item_box_title">
+						<div>비고</div>
 						<div>ID</div>
 						<div>테스트 이름</div>
 						<div>닉네임</div>
@@ -119,8 +187,20 @@
 						<div>날짜</div>
 					</div>
 				{/if}
-				{#each items as item}
-					<div class="item_box">
+				{#each items as item, index}
+					<div
+						class="item_box"
+						on:mousedown={onTouchStart(item.id, item.test_name, item.username)}
+						on:mouseup={onTouchEnd}
+						on:mouseleave={onTouchEnd}
+						on:touchstart={onTouchStart(item.id, item.test_name, item.username)}
+						on:touchend={onTouchEnd}
+						on:touchcancel={onTouchEnd}
+					>
+						<div>
+							<p>{isMobile ? '비고' : ''}</p>
+							{index + 1}
+						</div>
 						<div>
 							<p>{isMobile ? '아이디' : ''}</p>
 							{item.id}
@@ -159,6 +239,9 @@
 						</div>
 					</div>
 				{/each}
+				{#if isLoading}
+					<LoadingSpinnerCircle />
+				{/if}
 				<InfiniteScroll fetchNext={fetchNextPage} />
 			</div>
 		</div>
@@ -167,6 +250,7 @@
 
 <style>
 	.list_box {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		width: 100%;
@@ -189,21 +273,24 @@
 		border-bottom: 2px solid var(--main-bg-white);
 		background-color: var(--main-bg-darkPurple);
 		color: var(--main-bg-white);
+		cursor: pointer;
+	}
+	.item_box:hover {
+		background-color: var(--main-bg-purple);
 	}
 	.item_box_title > div,
 	.item_box > div {
-		flex: 1; /* 모든 div가 동일한 너비를 갖도록 설정 */
-		text-align: center; /* 텍스트 중앙 정렬 */
+		flex: 1;
+		text-align: center;
 	}
 
-	/* 예를 들어 첫 번째와 마지막 div에 대해 다른 설정이 필요한 경우 */
 	.item_box_title > div:first-child,
 	.item_box > div:first-child {
-		flex: 0.5; /* 첫 번째 항목의 너비를 다른 항목보다 좁게 설정 */
+		flex: 0.5;
 	}
 	.item_box_title > div:last-child,
 	.item_box > div:last-child {
-		flex: 1.5; /* 마지막 항목의 너비를 다른 항목보다 넓게 설정 */
+		flex: 1.5;
 	}
 	.item_message {
 		color: var(--main-bg-yellow);
@@ -213,8 +300,8 @@
 	@media (max-width: 768px) {
 		.item_box {
 			flex-direction: column;
-			align-items: flex-start; /* 왼쪽 정렬로 변경 */
-			height: auto; /* 높이를 자동으로 조절하여 내용에 맞춤 */
+			align-items: flex-start;
+			height: auto;
 			margin-bottom: 1rem;
 			padding: 1rem;
 			border-radius: 8px;
@@ -226,15 +313,15 @@
 			margin-bottom: 1rem;
 		}
 		.item_box div p {
-			flex: 0 0 auto; /* p 태그가 flex 항목의 크기를 결정하지 않도록 설정 */
-			margin-right: 5rem; /* p와 내용 사이의 여백 설정 */
+			flex: 0 0 auto;
+			margin-right: 5rem;
 			color: var(--main-bg-lightGray);
 		}
 		.item_message {
-			flex: 1; /* item_message가 남은 공간을 모두 차지하도록 설정 */
-			overflow-x: scroll; /* 가로 스크롤 활성화 */
-			white-space: nowrap; /* 메시지를 한 줄로 표시 */
-			max-height: none; /* 모바일에서는 최대 높이 제한을 제거 */
+			flex: 1;
+			overflow-x: scroll;
+			white-space: nowrap;
+			max-height: none;
 		}
 		.main_top_box {
 			margin: 2rem 0;

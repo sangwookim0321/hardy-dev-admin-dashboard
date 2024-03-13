@@ -18,4 +18,11 @@
 	})
 </script>
 
-<div id="infinite-scroll-trigger"></div>
+<div class="infinite_scroll" id="infinite-scroll-trigger"></div>
+
+<style>
+	.infinite_scroll {
+		position: absolute;
+		bottom: 600px;
+	}
+</style>

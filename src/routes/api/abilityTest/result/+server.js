@@ -39,6 +39,7 @@ export async function GET({ request }) {
 			.from('ability_tests_result')
 			.select('*', { count: 'exact' })
 			.range(offset, offset + limit - 1)
+			.order('created_at', { ascending: false })
 
 		if (error) {
 			console.error('테스트 결과 조회 실패:', error)
@@ -49,6 +50,36 @@ export async function GET({ request }) {
 			{ data: data, total: count, message: '테스트 결과 조회 성공', status: 200 },
 			{ status: 200 }
 		)
+	} catch (err) {
+		console.error('서버 오류:', err)
+		return json(
+			{
+				message: err.message,
+				status: err.status || 400,
+				error: err.error || '서버 오류'
+			},
+			{ status: err.status || 500 }
+		)
+	}
+}
+
+export async function DELETE({ request }) {
+	const authHeader = request.headers.get('authorization')
+
+	const url = new URL(request.url)
+	const id = url.searchParams.get('id')
+
+	try {
+		await checkAdminPermission(authHeader)
+
+		const { error } = await supabase.from('ability_tests_result').delete().eq('id', id)
+
+		if (error) {
+			console.error('테스트 결과 아이템 삭제 실패:', error)
+			throw { status: 400, message: '테스트 결과 아이템 삭제 실패', error }
+		}
+
+		return json({ message: '테스트 결과 아이템 삭제 성공', status: 200 }, { status: 200 })
 	} catch (err) {
 		console.error('서버 오류:', err)
 		return json(

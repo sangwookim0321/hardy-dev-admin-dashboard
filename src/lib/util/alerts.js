@@ -1,18 +1,27 @@
 import Swal from 'sweetalert2'
 // success, error, warning, info, question
 
-export function showAlert({ title, text, icon, isCancel, confirmButtonText }) {
+export function showAlert({
+	title,
+	text,
+	icon,
+	isCancel,
+	confirmButtonText,
+	cancelButtonText,
+	callback
+}) {
 	return Swal.fire({
 		title,
 		text,
 		icon,
 		showCancelButton: isCancel,
-		confirmButtonColor: '#3085d6',
-		cancelButtonColor: '#d33',
-		confirmButtonText
+		confirmButtonColor: '#816bff',
+		cancelButtonColor: '#6c757d',
+		confirmButtonText,
+		cancelButtonText
 	}).then((result) => {
 		if (result.isConfirmed) {
-			Swal.fire('Success!', '', 'success')
+			callback()
 		}
 	})
 }
