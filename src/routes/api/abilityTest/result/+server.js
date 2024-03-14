@@ -35,14 +35,18 @@ export async function GET({ request }) {
 	try {
 		await checkAdminPermission(authHeader)
 
-		const { count: totalCount } = await supabase
+		const { error: testError, count: totalCount } = await supabase
 			.from('ability_tests_result')
 			.select('*', { count: 'exact' })
-			.single()
+
+		if (testError) {
+			console.error('테스트 결과 토탈 조회 실패:', testError)
+			throw { status: 400, message: '테스트 결과 토탈 조회 실패', error: testError }
+		}
 
 		const { data, error, count } = await supabase
 			.from('ability_tests_result')
-			.select('*', { count: 'exact' })
+			.select('*')
 			.range(offset, offset + limit - 1)
 			.order('created_at', { ascending: false })
 
