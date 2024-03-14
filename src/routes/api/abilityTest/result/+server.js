@@ -42,8 +42,16 @@ export async function GET({ request }) {
 			.order('created_at', { ascending: false })
 
 		if (error) {
-			console.error('테스트 결과 조회 실패:', error)
-			throw { status: 400, message: '테스트 결과 조회 실패', error }
+			if (error.code === 'PGRST103') {
+				// 범위가 유효하지 않을 때 빈 데이터 배열과 함께 성공 메시지 반환
+				return json(
+					{ data: [], total: count, message: '데이터가 더 이상 없습니다.', status: 200 },
+					{ status: 200 }
+				)
+			} else {
+				console.error('테스트 결과 조회 실패:', error)
+				throw { status: 400, message: '테스트 결과 조회 실패', error }
+			}
 		}
 
 		return json(
