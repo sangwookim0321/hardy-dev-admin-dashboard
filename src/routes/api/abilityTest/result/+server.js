@@ -35,6 +35,11 @@ export async function GET({ request }) {
 	try {
 		await checkAdminPermission(authHeader)
 
+		const { count: totalCount } = await supabase
+			.from('ability_tests_result')
+			.select('*', { count: 'exact' })
+			.single()
+
 		const { data, error, count } = await supabase
 			.from('ability_tests_result')
 			.select('*', { count: 'exact' })
@@ -45,7 +50,7 @@ export async function GET({ request }) {
 			if (error.code === 'PGRST103') {
 				// 범위가 유효하지 않을 때 빈 데이터 배열과 함께 성공 메시지 반환
 				return json(
-					{ data: [], total: count, message: '데이터가 더 이상 없습니다.', status: 200 },
+					{ data: [], total: totalCount, message: '데이터가 더 이상 없습니다.', status: 200 },
 					{ status: 200 }
 				)
 			} else {
@@ -55,7 +60,7 @@ export async function GET({ request }) {
 		}
 
 		return json(
-			{ data: data, total: count, message: '테스트 결과 조회 성공', status: 200 },
+			{ data: data, total: totalCount, message: '테스트 결과 조회 성공', status: 200 },
 			{ status: 200 }
 		)
 	} catch (err) {
