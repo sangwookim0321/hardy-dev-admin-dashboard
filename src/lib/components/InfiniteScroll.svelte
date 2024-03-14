@@ -23,6 +23,6 @@
 <style>
 	.infinite_scroll {
 		position: absolute;
-		bottom: 600px;
+		bottom: 350px;
 	}
 </style>
