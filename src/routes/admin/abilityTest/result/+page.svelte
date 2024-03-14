@@ -120,7 +120,6 @@
 			async (res) => {
 				items = items.filter((item) => item.id !== id)
 				sweetToast('테스트 결과 삭제 완료', 'success')
-				console.log('success delete', res, id)
 			},
 			(err) => {
 				console.error(err)
@@ -196,6 +195,7 @@
 						on:touchstart={onTouchStart(item.id, item.test_name, item.username)}
 						on:touchend={onTouchEnd}
 						on:touchcancel={onTouchEnd}
+						on:touchmove={onTouchEnd}
 					>
 						<div>
 							<p>{isMobile ? '비고' : ''}</p>
