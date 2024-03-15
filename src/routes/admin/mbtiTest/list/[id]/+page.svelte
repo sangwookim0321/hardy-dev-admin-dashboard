@@ -32,17 +32,32 @@
 			{ type: 'ESFJ', description: 'ESFJ 설명' }
 		],
 		questions: [
-			[
-				{ content: '질문A', types: [] },
-				{ content: '질문B', types: [] }
-			],
-			[
-				{ content: '질문A', types: [] },
-				{ content: '질문B', types: [] }
-			]
+			{
+				content: '질문 내용',
+				sub_img_url: '',
+				sub_img_preview: '',
+				old_sub_img_url: '',
+				setQuestions: [
+					{ set_content: '선택지1', types: [] },
+					{ set_content: '선택지2', types: [] }
+				]
+			},
+			{
+				content: '질문 내용',
+				sub_img_url: '',
+				sub_img_preview: '',
+				old_sub_img_url: '',
+				setQuestions: [
+					{ set_content: '선택지1', types: [] },
+					{ set_content: '선택지2', types: [] }
+				]
+			}
 		]
 	}
+
 	let oldImageUrl = ''
+	let deleteTypeList = []
+	let deleteList = []
 
 	function handleFileChange(event) {
 		const file = event.target.files[0]
@@ -57,8 +72,21 @@
 		event.target.value = ''
 	}
 
+	function handleSubFileChange(event, index) {
+		const file = event.target.files[0]
+		if (file) {
+			let fileReader = new FileReader()
+			fileReader.readAsDataURL(file)
+			fileReader.onload = () => {
+				test.questions[index].sub_img_preview = fileReader.result
+				test.questions[index].sub_img_url = file
+			}
+		}
+		event.target.value = ''
+	}
+
 	function addType() {
-		const newItem = { type: '', description: '' }
+		const newItem = { type: '', description: '', isNew: true }
 
 		test.types = [...test.types, newItem]
 
@@ -72,10 +100,16 @@
 	}
 
 	function addQuestion() {
-		const newItem = [
-			{ content: '', types: [] },
-			{ content: '', types: [] }
-		]
+		const newItem = {
+			isNew: true,
+			content: '질문 내용',
+			sub_img_url: '',
+			sub_img_preview: '',
+			setQuestions: [
+				{ set_content: '선택지1', types: [] },
+				{ set_content: '선택지2', types: [] }
+			]
+		}
 
 		test.questions = [...test.questions, newItem]
 
@@ -89,34 +123,43 @@
 	}
 
 	function handleTypeChange(questionIndex, qIndex, event) {
-		if (!event.target.value) return
-
 		const selectedType = event.target.value
+		if (!selectedType) return
 
-		const currentTypes = test.questions[questionIndex][qIndex].types
-
+		const currentTypes = test.questions[questionIndex].setQuestions[qIndex].types
 		if (!currentTypes.includes(selectedType)) {
-			test.questions[questionIndex][qIndex].types = [...currentTypes, selectedType]
+			test.questions[questionIndex].setQuestions[qIndex].types = [...currentTypes, selectedType]
+			// 선택 후 셀렉트 박스 초기화
+			test.questions[questionIndex].setQuestions[qIndex].selectedType = ''
 		}
 	}
 
 	function handleTypeRemove(questionIndex, qIndex, typeIndex) {
-		let questionTypes = test.questions[questionIndex][qIndex].types
+		let questionTypes = test.questions[questionIndex].setQuestions[qIndex].types
 
 		questionTypes.splice(typeIndex, 1)
 
-		test.questions[questionIndex][qIndex].types = questionTypes
+		test.questions[questionIndex].setQuestions[qIndex].types = questionTypes
 	}
 
-	function removeField(index, field) {
+	function removeField(index, field, id) {
 		if (field === 'type') {
 			test.types.splice(index, 1)
 
 			test = { ...test }
+
+			if (id) {
+				deleteTypeList.push(id)
+				console.log('deleteTypeList', deleteTypeList)
+			}
 		} else if (field === 'question') {
 			test.questions.splice(index, 1)
 
 			test = { ...test }
+			if (id) {
+				deleteList.push(id)
+				console.log('deleteList', deleteList)
+			}
 		}
 	}
 
@@ -161,13 +204,21 @@
 		}
 
 		for (let i = 0; i < test.questions.length; i++) {
-			for (let j = 0; j < test.questions[i].length; j++) {
-				if (!test.questions[i][j].content) {
-					sweetToast('질문을 입력해주세요', 'warning')
+			// 질문 내용이 있는지 확인
+			if (!test.questions[i].content) {
+				sweetToast('질문을 입력해주세요', 'warning')
+				return
+			}
+
+			for (let j = 0; j < test.questions[i].setQuestions.length; j++) {
+				// 각 선택지의 내용이 있는지 확인
+				if (!test.questions[i].setQuestions[j].set_content) {
+					sweetToast('모든 선택지에 내용을 입력해주세요', 'warning')
 					return
 				}
-				if (test.questions[i][j].types.length === 0) {
-					sweetToast('질문에 타입을 선택해주세요', 'warning')
+				// 각 선택지에 최소 하나의 타입이 지정되어 있는지 확인
+				if (test.questions[i].setQuestions[j].types.length === 0) {
+					sweetToast('모든 선택지에 타입을 최소 하나 이상 선택해주세요', 'warning')
 					return
 				}
 			}
@@ -177,11 +228,47 @@
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
-		formData.append('img', test.img_url)
+		if (test.img_url instanceof File) {
+			formData.append('img', test.img_url)
+		}
 		formData.append('oldImageUrl', oldImageUrl)
+		formData.append('deleteList', JSON.stringify(deleteList))
+		formData.append('deleteTypeList', JSON.stringify(deleteTypeList))
 		formData.append('type_category', test.type_category)
 		formData.append('types', JSON.stringify(test.types))
-		formData.append('questions', JSON.stringify(test.questions))
+
+		const questionsData = test.questions.map((item, index) => {
+			const { sub_img_url, setQuestions, isNew, ...rest } = item
+
+			// 서브 이미지 파일이 있는 경우 formData 에 파일 추가
+			if (sub_img_url instanceof File) {
+				formData.append(`sub_img_url_${index}`, sub_img_url)
+			}
+
+			// 기존 서브 이미지 URL 전송 (수정 안됐을 경우)
+			if (item.old_sub_img_url && !(sub_img_url instanceof File)) {
+				formData.append(`old_sub_img_url_${index}`, item.old_sub_img_url)
+			}
+
+			if (isNew) {
+				return { ...rest, setQuestions }
+			} else {
+				return { ...rest, setQuestions, id: item.id }
+			}
+		})
+
+		formData.append('questions', JSON.stringify(questionsData))
+
+		console.log('title', test.title)
+		console.log('sub_title', test.sub_title)
+		console.log('description', test.description)
+		console.log('img_url', test.img_url)
+		console.log('oldImageUrl', oldImageUrl)
+		console.log('deleteList', deleteList)
+		console.log('deleteTypeList', deleteTypeList)
+		console.log('type_category', test.type_category)
+		console.log('types', test.types)
+		console.log('questions', questionsData)
 
 		await httpPutFormData(
 			`${endPoints.MBTI_TEST}/${pageId}`,
@@ -215,6 +302,14 @@
 		test.img_preview = domainPath + imgUrl
 	}
 
+	function setImageUrlForQuestions(questions) {
+		// 서브 이미지 도메인 경로 셋팅
+		const domainPath = 'https://aqnmhrbebgwoziqtyyns.supabase.co/storage/v1/object/public/'
+		questions.forEach((question) => {
+			question.sub_img_preview = domainPath + question.sub_img_url
+		})
+	}
+
 	async function getItem() {
 		await httpGet(
 			`${endPoints.MBTI_TEST}/${pageId}`,
@@ -222,8 +317,16 @@
 			true,
 			(res) => {
 				test = res.data.data
-				oldImageUrl = res.data.data.img_url
+				oldImageUrl = test.img_url
 				setImageUrl(test.img_url)
+				setImageUrlForQuestions(test.questions)
+
+				test.questions.forEach((question) => {
+					if (question.sub_img_url) {
+						question.old_sub_img_url = question.sub_img_url
+					}
+				})
+
 				test.img_url = ''
 			},
 			(err) => {
@@ -323,7 +426,7 @@
 							class="type_remove_img"
 							src="/imgs/icon_remove.svg"
 							alt="remove"
-							on:click={() => removeField(index, 'type')}
+							on:click={() => removeField(index, 'type', type.id)}
 						/>
 					{/if}
 					<div class="type_set">
@@ -346,15 +449,54 @@
 									class="question_remove_img"
 									src="/imgs/icon_remove.svg"
 									alt="remove"
-									on:click={() => removeField(index, 'question')}
+									on:click={() => removeField(index, 'question', question.id)}
 								/>
 							{/if}
 						</div>
 
-						{#each question as q, qIndex}
+						<div style="display: flex; flex-direction: column; align-items: center;">
+							<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
+							<label for={`sub_file_upload_${index}`} class="custom_file_upload">
+								<div style="cursor: pointer;" class="image_upload">
+									{#if question.sub_img_preview}
+										<img class="img_preview" src={question.sub_img_preview} alt="이미지" />
+									{:else}
+										<img src="/imgs/icon_add.svg" alt="이미지 추가" />
+									{/if}
+									{#if question.sub_img_preview}
+										<img
+											class="img_remove"
+											src="/imgs/icon_remove.svg"
+											alt="이미지 삭제"
+											on:click={(event) => {
+												event.preventDefault()
+												question.sub_img_preview = ''
+												question.sub_img_url = ''
+											}}
+										/>
+									{/if}
+								</div>
+								<input
+									type="file"
+									id={`sub_file_upload_${index}`}
+									style="display: none;"
+									class="file_upload"
+									on:change={(event) => handleSubFileChange(event, index)}
+								/>
+							</label>
+						</div>
+						<div class="question_content_title">
+							<span>질문 내용</span>
+							<input type="text" id={`question_${index}`} bind:value={question.content} />
+						</div>
+
+						{#each question.setQuestions as setQ, qIndex}
 							<div class="question_inner">
 								<div class="question_inner_01">
-									<select on:change={(event) => handleTypeChange(index, qIndex, event)}>
+									<select
+										on:change={(event) => handleTypeChange(index, qIndex, event)}
+										bind:value={test.questions[index].setQuestions[qIndex].selectedType}
+									>
 										<option value="">선택</option>
 										{#each test.types as type, typeIndex}
 											<option value={type.type}>{type.type}</option>
@@ -362,9 +504,13 @@
 									</select>
 								</div>
 								<div class="question_inner_02">
-									<input type="text" id={`question_${index}_${qIndex}`} bind:value={q.content} />
+									<input
+										type="text"
+										id={`question_${index}_${qIndex}`}
+										bind:value={setQ.set_content}
+									/>
 									<div class="q_type_inner">
-										{#each q.types as type, typeIndex}
+										{#each setQ.types as type, typeIndex}
 											<div class="q_type_inner_01">
 												<p style="color: var(--main-bg-purple)">{type}</p>
 												<img
@@ -417,7 +563,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 30%;
+		width: 50%;
 	}
 	.type_set {
 		display: flex;
@@ -461,6 +607,16 @@
 		width: 100%;
 	}
 	.question_inner_02 input {
+		border: 1px solid var(--main-bg-gray);
+		border-radius: 10px;
+		padding: 1.2rem;
+	}
+	.question_content_title {
+		display: flex;
+		flex-direction: column;
+		margin: 1rem 0;
+	}
+	.question_content_title input {
 		border: 1px solid var(--main-bg-gray);
 		border-radius: 10px;
 		padding: 1.2rem;

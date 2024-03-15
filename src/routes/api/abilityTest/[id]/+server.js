@@ -269,13 +269,6 @@ export async function PUT({ request, params }) {
 
 		// -----------------------------------------------------------------------------------
 
-		// 기존 질문 업데이트 및 신규 질문 추가 처리
-		await Promise.all(
-			questions.map(async (item, index) => {
-				// 여기에 질문 업데이트 및 추가 로직 구현
-			})
-		)
-
 		// 삭제할 질문 처리
 		if (deleteList && deleteList.length > 0) {
 			await Promise.all(

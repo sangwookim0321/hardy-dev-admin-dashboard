@@ -33,41 +33,55 @@ export async function GET({ request, params }) {
 
 		const { id } = params
 
-		const { data, error } = await supabase.from('mbti_tests').select().eq('id', id).single()
+		const { data, error } = await supabase
+			.from('mbti_tests')
+			.select()
+			.eq('id', id)
+			.single()
+			.order('id', { ascending: true })
 
 		if (error) {
 			throw { status: 404, message: '해당 테스트를 찾을 수 없습니다.', error }
+		}
+
+		const { data: setQuestionsData, error: setQuestionsError } = await supabase
+			.from('mbti_question_sets')
+			.select()
+			.eq('test_id', id)
+			.order('id', { ascending: true })
+
+		if (setQuestionsError) {
+			throw {
+				status: 404,
+				message: '해당 테스트의 질문 세트를 찾을 수 없습니다.',
+				error: setQuestionsError
+			}
 		}
 
 		const { data: questionsData, error: questionsError } = await supabase
 			.from('mbti_questions')
 			.select()
 			.eq('test_id', id)
+			.order('id', { ascending: true })
 
 		if (questionsError) {
 			throw {
 				status: 404,
-				message: '해당 테스트의 문제를 찾을 수 없습니다.',
+				message: '해당 테스트의 질문을 찾을 수 없습니다.',
 				error: questionsError
 			}
 		}
 
-		// 문제들을 set_id 별로 그룹화
-		const groupedQuestions = questionsData.reduce((acc, question) => {
-			if (!acc[question.set_id]) {
-				acc[question.set_id] = []
-			}
-			acc[question.set_id].push(question)
-			return acc
-		}, {})
-
-		// 객체를 배열로 변환
-		const questionsBySet = Object.values(groupedQuestions)
+		const questionsBySet = setQuestionsData.map((set) => {
+			const setQuestions = questionsData.filter((question) => question.set_id === set.id)
+			return { ...set, setQuestions: setQuestions }
+		})
 
 		const { data: typesData, error: typesError } = await supabase
 			.from('mbti_types')
 			.select()
 			.eq('test_id', id)
+			.order('id', { ascending: true })
 
 		if (typesError) {
 			throw {
@@ -120,48 +134,31 @@ export async function PUT({ request, params }) {
 		const type_category = formData.get('type_category')
 		const types = JSON.parse(formData.get('types'))
 		const questions = JSON.parse(formData.get('questions'))
+		const deleteTypeList = JSON.parse(formData.get('deleteTypeList'))
+		const deleteList = JSON.parse(formData.get('deleteList'))
+		let main_img_path = ''
 
 		// 유효성 검사
 		if (!title || !sub_title || !description || !type_category || !types || !questions) {
 			throw { status: 400, message: '모든 필드를 채워주세요.' }
 		}
 
-		// 데이터베이스에서 현재 테스트의 img_url 조회
-		const { data: testData, error: testError } = await supabase
-			.from('mbti_tests')
-			.select('img_url')
-			.eq('id', id)
-			.single()
+		if (imgFile && imgFile instanceof File) {
+			// 이미지 파일이 있는 경우, 메인 이미지 변경으로 간주
+			const existingImage = oldImageUrl.replace('admin_dashboard_bucket/', '')
 
-		if (testError || !testData) {
-			throw { status: 404, message: '테스트 이미지를 찾을 수 없습니다.' }
-		}
+			const { error: mainImgDeleteError } = await supabase.storage
+				.from('admin_dashboard_bucket')
+				.remove([existingImage])
 
-		const currentImgUrl = testData.img_url
-
-		let img_path = ''
-
-		// 이미지 파일이 제공되었는지 확인
-		if (imgFile && typeof imgFile !== 'string') {
-			// imgFile이 파일 객체인 경우
-			// 기존 이미지 삭제 로직
-			if (oldImageUrl) {
-				// oldImageUrl 존재 여부만 확인
-				const existingImgPath = oldImageUrl.replace('admin_dashboard_bucket/', '')
-
-				if (existingImgPath) {
-					const { error: deleteError } = await supabase.storage
-						.from('admin_dashboard_bucket')
-						.remove([existingImgPath])
-
-					if (deleteError) {
-						console.error('기존 이미지 삭제 실패:', deleteError)
-						throw { status: 400, message: '기존 이미지 삭제 실패', error: deleteError }
-					}
+			if (mainImgDeleteError) {
+				throw {
+					status: 400,
+					message: '기존 메인 이미지 삭제에 실패했습니다.',
+					error: mainImgDeleteError
 				}
 			}
 
-			// 새 이미지 업로드 로직
 			const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 				.from('admin_dashboard_bucket')
 				.upload(`mbtiTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
@@ -170,36 +167,36 @@ export async function PUT({ request, params }) {
 				})
 
 			if (imgUploadError) {
-				console.error('이미지 업로드 실패:', imgUploadError)
-				throw { status: 400, message: '이미지 업로드 실패', error: imgUploadError }
+				throw {
+					status: 400,
+					message: '새로운 메인 이미지 업로드에 실패했습니다.',
+					error: imgUploadError
+				}
 			}
 
-			img_path = imgUploadData.fullPath // 새 이미지 경로로 업데이트
+			main_img_path = imgUploadData.fullPath
 		} else {
-			// 이미지 변경 없음: 기존 이미지 URL을 그대로 사용
-			img_path = currentImgUrl
+			// 이미지 파일이 없는 경우, 메인 이미지 변경이 아닌 경우로 간주
+			main_img_path = oldImageUrl
 		}
 
-		// 테스트 정보 수정
 		const { data, error } = await supabase
 			.from('mbti_tests')
 			.update({
-				title: title,
-				sub_title: sub_title,
-				description: description,
-				img_url: img_path,
-				type_category: type_category,
+				title,
+				sub_title,
+				description,
+				type_category,
+				img_url: main_img_path,
 				updated_at: new Date()
 			})
 			.eq('id', id)
-			.select()
 
 		if (error) {
-			console.error('테스트 정보 수정 실패:', error)
-			throw { status: 400, message: '테스트 정보 수정 실패', error: error }
+			throw { status: 400, message: '테스트 수정에 실패했습니다.', error }
 		}
 
-		const testId = data[0].id
+		// -----------------------------------------------------------------------------------
 
 		// 타입 정보 수정
 		await Promise.all(
@@ -209,7 +206,7 @@ export async function PUT({ request, params }) {
 					const { error: updateError } = await supabase
 						.from('mbti_types')
 						.update({
-							test_id: testId, // 이전에 수정된 테스트의 ID
+							test_id: id,
 							type: type.type,
 							description: type.description
 						})
@@ -220,66 +217,249 @@ export async function PUT({ request, params }) {
 					}
 				} else {
 					// 새 타입 추가
-					const { error: insertError } = await supabase.from('mbti_types').insert([
+					const { error: typeInsertError } = await supabase.from('mbti_types').insert([
 						{
-							test_id: testId, // 이전에 수정된 테스트의 ID
+							test_id: id,
 							type: type.type,
 							description: type.description
 						}
 					])
 
-					if (insertError) {
-						throw { status: 400, message: '새 타입 추가 실패', error: insertError }
+					if (typeInsertError) {
+						throw { status: 400, message: '새 타입 추가 실패', error: typeInsertError }
 					}
 				}
 			})
 		)
+
+		// -----------------------------------------------------------------------------------
 
 		// 질문 정보 수정
-		const flatQuestions = questions.flat() // 2차원 배열을 1차원 배열로 평탄화
-		let maxSetId = await supabase
-			.from('mbti_questions')
-			.select('set_id')
-			.order('set_id', { ascending: false })
-			.limit(1)
-		maxSetId = maxSetId.data[0]?.set_id || 0 // 기존 최대 set_id 조회, 없으면 0
 
 		await Promise.all(
-			flatQuestions.map(async (question, index) => {
-				if (question.id) {
-					// 기존 질문 업데이트
-					const { error: updateError } = await supabase
-						.from('mbti_questions')
-						.update({
-							content: question.content,
-							types: question.types
-							// set_id 업데이트가 필요한 경우 로직 추가
-						})
-						.eq('id', question.id)
+			questions.map(async (item, index) => {
+				const fileKey = `sub_img_url_${index}`
+				const file = formData.get(fileKey)
+				let sub_img_path = ''
 
-					if (updateError) {
-						throw { status: 400, message: '질문 정보 수정 실패', error: updateError }
-					}
-				} else {
-					// 새 질문 추가
-					// 새 질문의 경우, set_id는 질문 세트의 순서에 따라 결정
-					const newSetId = Math.ceil((index + 1) / 2) + maxSetId // 예: 2개 질문이 한 세트이므로, index를 사용하여 set_id 계산
+				if (item.isNew) {
+					// 신규 추가된 질문건
+					if (file && file instanceof File) {
+						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.upload(`mbtiTest-sub-images/${Date.now()}_${file.name}`, file, {
+								cacheControl: '3600',
+								upsert: false
+							})
 
-					const { error: insertError } = await supabase.from('mbti_questions').insert([
-						{
-							test_id: testId,
-							content: question.content,
-							types: question.types,
-							set_id: newSetId
+						if (imgUploadError) {
+							throw {
+								status: 400,
+								message: '질문 이미지 업로드에 실패했습니다.',
+								error: imgUploadError
+							}
 						}
-					])
 
-					if (insertError) {
-						throw { status: 400, message: '새 질문 추가 실패', error: insertError }
+						sub_img_path = imgUploadData.fullPath
 					}
+
+					const { data: setQuestionData, error: setQuestionError } = await supabase
+						.from('mbti_question_sets')
+						.insert({
+							test_id: id,
+							content: item.content,
+							sub_img_url: sub_img_path
+						})
+						.select('id')
+
+					if (setQuestionError) {
+						throw { status: 400, message: '질문 추가에 실패했습니다.', error: setQuestionError }
+					}
+
+					// 질문에 대한 선택지 추가
+					await Promise.all(
+						item.setQuestions.map(async (setQuestion) => {
+							const { data: questionData, error: questionError } = await supabase
+								.from('mbti_questions')
+								.insert({
+									set_id: setQuestionData[0].id,
+									set_content: setQuestion.set_content,
+									types: setQuestion.types
+								})
+
+							if (questionError) {
+								throw {
+									status: 400,
+									message: '질문 선택지 추가에 실패했습니다.',
+									error: questionError
+								}
+							}
+						})
+					)
+				} else if (item.id) {
+					if (file && file instanceof File) {
+						// 기존 질문에 대한 처리
+						const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+
+						const { error: subImgDeleteError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.remove([existingSubImage])
+
+						if (subImgDeleteError) {
+							throw {
+								status: 400,
+								message: '기존 질문 이미지 삭제에 실패했습니다.',
+								error: subImgDeleteError
+							}
+						}
+
+						// 새 이미지 업로드
+						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.upload(`mbtiTest-sub-images/${Date.now()}_${file.name}`, file, {
+								cacheControl: '3600',
+								upsert: false
+							})
+
+						if (imgUploadError) {
+							throw {
+								status: 400,
+								message: '새로운 질문 이미지 업로드에 실패했습니다.',
+								error: imgUploadError
+							}
+						}
+
+						sub_img_path = imgUploadData.fullPath
+					} else if (item.isImageDeleted && item.old_sub_img_url) {
+						// 이미지 삭제 경우: 기존 이미지 삭제
+						const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+						await supabase.storage.from('admin_dashboard_bucket').remove([existingSubImage])
+						sub_img_path = ''
+					} else {
+						// 이미지 그대로 유지: 기존 이미지 경로 사용
+						sub_img_path = item.old_sub_img_url
+					}
+
+					// 질문 업데이트 로직 (sub_img_path를 포함하여 질문 정보 업데이트)
+					const { data: setQuestionUpdate, error: setQuestionUpdateError } = await supabase
+						.from('mbti_question_sets')
+						.update({
+							content: item.content,
+							sub_img_url: sub_img_path
+						})
+						.eq('id', item.id)
+						.select('id')
+
+					if (setQuestionUpdateError) {
+						throw {
+							status: 400,
+							message: '질문 수정에 실패했습니다.',
+							error: setQuestionUpdateError
+						}
+					}
+
+					// 질문 선택지 업데이트
+					await Promise.all(
+						item.setQuestions.map(async (setQuestion) => {
+							if (setQuestion.id) {
+								// 기존 선택지 업데이트
+								const { error: updateError } = await supabase
+									.from('mbti_questions')
+									.update({
+										set_content: setQuestion.set_content,
+										types: setQuestion.types
+									})
+									.eq('id', setQuestion.id)
+
+								if (updateError) {
+									throw {
+										status: 400,
+										message: '질문 선택지 수정 실패',
+										error: updateError
+									}
+								}
+							}
+						})
+					)
 				}
 			})
 		)
+
+		// -----------------------------------------------------------------------------------
+
+		// 삭제할 타입 처리
+
+		if (deleteTypeList && deleteTypeList.length > 0) {
+			await Promise.all(
+				deleteTypeList.map(async (id) => {
+					// 타입 레코드 삭제
+					const { error: typeDeleteError } = await supabase.from('mbti_types').delete().eq('id', id)
+
+					if (typeDeleteError) {
+						throw { status: 400, message: '타입 삭제에 실패했습니다.', error: typeDeleteError }
+					}
+				})
+			)
+		}
+
+		// 삭제할 질문 처리
+
+		if (deleteList && deleteList.length > 0) {
+			await Promise.all(
+				deleteList.map(async (id) => {
+					// 먼저 삭제할 질문의 sub_img_url을 조회
+					const { data: question, error: questionFetchError } = await supabase
+						.from('mbti_question_sets')
+						.select('sub_img_url')
+						.eq('id', id)
+						.single()
+
+					if (questionFetchError) {
+						throw {
+							status: 400,
+							message: '삭제할 질문을 찾는 데 실패했습니다.',
+							error: questionFetchError
+						}
+					}
+
+					// 질문에 연결된 이미지가 있으면 스토리지에서 삭제
+					if (question.sub_img_url) {
+						const existingSubImage = question.sub_img_url.replace('admin_dashboard_bucket/', '')
+						const { error: subImgDeleteError } = await supabase.storage
+							.from('admin_dashboard_bucket')
+							.remove([existingSubImage])
+
+						if (subImgDeleteError) {
+							throw {
+								status: 400,
+								message: '질문의 이미지 삭제에 실패했습니다.',
+								error: subImgDeleteError
+							}
+						}
+					}
+
+					// 질문 레코드 삭제
+					const { error: questionDeleteError } = await supabase
+						.from('mbti_questions')
+						.delete()
+						.eq('set_id', id)
+
+					if (questionDeleteError) {
+						throw { status: 400, message: '질문 삭제에 실패했습니다.', error: questionDeleteError }
+					}
+
+					// 질문 세트 레코드 삭제
+					const { error: setDeleteError } = await supabase
+						.from('mbti_question_sets')
+						.delete()
+						.eq('id', id)
+
+					if (setDeleteError) {
+						throw { status: 400, message: '질문 세트 삭제에 실패했습니다.', error: setDeleteError }
+					}
+				})
+			)
+		}
 
 		return json({ message: '테스트가 성공적으로 수정되었습니다.', status: 200 }, { status: 200 })
 	} catch (err) {

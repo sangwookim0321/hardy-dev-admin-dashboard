@@ -111,7 +111,6 @@
 	}
 
 	async function deleteItem(id) {
-		console.log(id)
 		await httpDelete(
 			`${endPoints.ABILITY_TEST_RESULT}?id=${id}`,
 			'abilityTestResult',
