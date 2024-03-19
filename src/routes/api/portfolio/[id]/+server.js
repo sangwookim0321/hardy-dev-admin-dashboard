@@ -43,7 +43,7 @@ export async function GET({ request, params }) {
 				status: 200,
 				headers: {
 					'Content-Type': 'application/json',
-					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app/'
+					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app'
 				}
 			}
 		)
@@ -59,7 +59,7 @@ export async function GET({ request, params }) {
 				status: err.status || 500,
 				headers: {
 					'Content-Type': 'application/json',
-					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app/'
+					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app'
 				}
 			}
 		)
