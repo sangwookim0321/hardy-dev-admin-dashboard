@@ -127,6 +127,13 @@
 			() => {}
 		)
 	}
+
+	async function logout() {
+		sessionStorage.removeItem('accessToken')
+		sessionStorage.removeItem('refreshToken')
+		sweetToast('로그아웃 되었습니다.', 'success')
+		await goto('/')
+	}
 </script>
 
 <div class="layout">
@@ -195,7 +202,7 @@
 						class={currentPath === '/admin/settings' ? 'highlightedPurple' : 'noHighlight'}>설정</a
 					>
 				</div>
-				<div class="icon_box" tabindex="0" role="button" on:click={closeSidebar}>
+				<div class="icon_box" tabindex="0" role="button" on:click={logout}>
 					<img src="/imgs/icon_logout.svg" alt="logout" />
 					<p>로그아웃</p>
 				</div>

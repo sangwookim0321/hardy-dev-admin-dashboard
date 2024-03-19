@@ -12,4 +12,9 @@
 	})
 </script>
 
-<h1>설정 페이지</h1>
+<main>
+	<div class="main_top_box">
+		<img src="/imgs/icon_left.svg" alt="icon" />
+		<span>설정</span>
+	</div>
+</main>

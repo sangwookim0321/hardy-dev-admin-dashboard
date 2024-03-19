@@ -8,8 +8,8 @@
 
 	const { httpPost, endPoints, statusHandler } = useApi()
 
-	let email = 'pointjumpit@gmail.com'
-	let password = '!als970321!'
+	let email = ''
+	let password = ''
 	let emailFocused = false
 	let passwordFocused = false
 
