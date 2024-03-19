@@ -29,8 +29,16 @@
 			title: 'MBTI 테스트',
 			submenu: [
 				{ path: '/admin/mbtiTest/add', label: '등록' },
-				// { path: '/admin/mbtiTest/modify', label: '수정' },
 				{ path: '/admin/mbtiTest/list', label: '목록' }
+				// { path: '/admin/mbtiTest/list', label: '결과' },
+			]
+		},
+		{
+			id: 'portfolio',
+			title: '포트폴리오 데이터',
+			submenu: [
+				{ path: '/admin/portfolio/add', label: '등록' },
+				{ path: '/admin/portfolio/list', label: '목록' }
 			]
 		}
 	]

@@ -1,27 +1,21 @@
-<!-- 능력고사 테스트 결과 페이지 -->
+<!-- 포트폴리오 데이터 목록 페이지 -->
 <script>
 	import { onMount, onDestroy } from 'svelte'
 	import { browser } from '$app/environment'
 	import { page } from '$app/stores.js'
 	import { goto } from '$app/navigation'
 	import { storePath, storeLoadingState } from '$lib/store/store'
-	import { formatDate, formatComma } from '$lib/util/filter'
 	import { showToast, showAlert } from '$lib/util/alerts'
-	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
-	import LoadingSpinnerCircle from '$lib/components/LoadingSpinnerCircle.svelte'
-	import InfiniteScroll from '$lib/components/InfiniteScroll.svelte'
+	import { formatDate, formatComma } from '$lib/util/filter'
 	import useApi from '$lib/util/api'
+	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte'
 
 	const { httpGet, httpDelete, endPoints, statusHandler } = useApi()
 
 	let currentPath
 
 	let items = []
-	let pageNum = 1
-	let limit = 5
-	let total = 0
 	let isMobile = false
-	let isLoading = false
 	let timer
 
 	if (browser) {
@@ -39,86 +33,47 @@
 		})
 	}
 
-	function sweetToast(title, icon) {
-		showToast({
-			title: title,
-			icon: icon
-		})
-	}
-
-	function sweetAlert(title, text, icon, isCancel, confirmButtonText, cancelButtonText, callback) {
-		showAlert({
-			title: title,
-			text: text,
-			icon: icon,
-			isCancel: isCancel,
-			confirmButtonText: confirmButtonText,
-			cancelButtonText: cancelButtonText,
-			callback: callback
-		})
-	}
-
 	function checkWindowSize() {
 		isMobile = window.innerWidth <= 768
 	}
 
-	async function fetchNextPage() {
-		if (items.length >= total) {
-			return
-		}
-		pageNum += 1
-		await getItem()
-	}
-
 	async function getItem() {
-		// 첫 페이지 로딩 또는 아직 로드할 데이터가 더 있는 경우에만 요청
-		if (pageNum === 1 || items.length < total) {
-			const params = new URLSearchParams({ page: pageNum, limit: limit })
-			isLoading = true
-
-			await httpGet(
-				`${endPoints.ABILITY_TEST_RESULT}?${params}`,
-				'abilityTestResult',
-				true,
-				(res) => {
-					if (res.data && res.data.data) {
-						items = [...items, ...res.data.data]
-						total = res.data.total
+		await httpGet(
+			endPoints.PORTFOLIO,
+			'PORTFOLIO',
+			true,
+			(res) => {
+				items = res.data.data
+			},
+			(err) => {
+				console.error(err)
+				statusHandler(
+					err.status,
+					() => {
+						sweetToast(err.message, 'error')
+					},
+					async () => {
+						await goto('/')
+						sweetToast(err.message, 'error')
 					}
-				},
-				(err) => {
-					console.error(err)
-					statusHandler(
-						err.status,
-						() => {
-							sweetToast(err.message, 'error')
-						},
-						async () => {
-							await goto('/')
-							sweetToast(err.message, 'error')
-						}
-					)
-				},
-				() => {},
-				() => {
-					storeLoadingState.set(false)
-					isLoading = false
-				}
-			)
-		} else {
-			console.log('data already loaded')
-		}
+				)
+			},
+			() => {},
+			() => {
+				storeLoadingState.set(false)
+			}
+		)
 	}
 
-	async function deleteItem(id) {
+	async function deleteItem(type) {
 		await httpDelete(
-			`${endPoints.ABILITY_TEST_RESULT}?id=${id}`,
-			'abilityTestResult',
+			`${endPoints.PORTFOLIO}?type=${type}`,
+			'PORTFOLIO',
 			null,
 			true,
 			async (res) => {
-				items = items.filter((item) => item.id !== id)
-				sweetToast('테스트 결과 삭제 완료', 'success')
+				items = items.filter((item) => item.type !== type)
+				sweetToast('포트폴리오 더미 데이터 삭제 완료', 'success')
 			},
 			(err) => {
 				console.error(err)
@@ -138,17 +93,36 @@
 		)
 	}
 
-	function onTouchStart(id, test_name, username) {
+	function sweetAlert(title, text, icon, isCancel, confirmButtonText, cancelButtonText, callback) {
+		showAlert({
+			title: title,
+			text: text,
+			icon: icon,
+			isCancel: isCancel,
+			confirmButtonText: confirmButtonText,
+			cancelButtonText: cancelButtonText,
+			callback: callback
+		})
+	}
+
+	function sweetToast(title, icon) {
+		showToast({
+			title: title,
+			icon: icon
+		})
+	}
+
+	function onTouchStart(type) {
 		timer = setTimeout(() => {
 			sweetAlert(
-				`${test_name}`,
-				`'${username}'님의 테스트 결과를 삭제 하시겠습니까?`,
+				`${type}`,
+				`'${type}' 데이터를 삭제하시겠습니까?`,
 				'info',
 				true,
 				'확인',
 				'취소',
 				() => {
-					deleteItem(id)
+					deleteItem(type)
 				}
 			)
 		}, 800)
@@ -156,6 +130,10 @@
 
 	function onTouchEnd() {
 		clearTimeout(timer)
+	}
+
+	async function moveDetail(type) {
+		await goto(`/admin/portfolio/list/${type}`)
 	}
 </script>
 
@@ -165,7 +143,7 @@
 	<main>
 		<div class="main_top_box">
 			<img src="/imgs/icon_left.svg" alt="icon" />
-			<span>능력고사 테스트 결과 리스트({total}개)</span>
+			<span>포트폴리오 데이터 리스트</span>
 		</div>
 
 		<div class="main_box">
@@ -175,23 +153,19 @@
 					<div class="item_box_title">
 						<div>비고</div>
 						<div>ID</div>
-						<div>테스트 이름</div>
-						<div>닉네임</div>
-						<div>총 문항수</div>
-						<div>정답/오답</div>
-						<div>점수</div>
-						<div>브라우저</div>
-						<div>메세지</div>
+						<div>타입</div>
+						<div>내용</div>
 						<div>날짜</div>
 					</div>
 				{/if}
 				{#each items as item, index}
 					<div
 						class="item_box"
-						on:mousedown={onTouchStart(item.id, item.test_name, item.username)}
+						on:click={moveDetail(item.type)}
+						on:mousedown={onTouchStart(item.type)}
 						on:mouseup={onTouchEnd}
 						on:mouseleave={onTouchEnd}
-						on:touchstart={onTouchStart(item.id, item.test_name, item.username)}
+						on:touchstart={onTouchStart(item.type)}
 						on:touchend={onTouchEnd}
 						on:touchcancel={onTouchEnd}
 						on:touchmove={onTouchEnd}
@@ -205,32 +179,12 @@
 							{item.id}
 						</div>
 						<div>
-							<p>{isMobile ? '테스트 이름' : ''}</p>
-							{item.test_name}
+							<p>{isMobile ? '타입' : ''}</p>
+							{item.type}
 						</div>
-						<div style="color: var(--main-bg-lightViolet);">
-							<p>{isMobile ? '닉네임' : ''}</p>
-							{item.username}
-						</div>
-						<div>
-							<p>{isMobile ? '총 문항수' : ''}</p>
-							{item.number_q}개
-						</div>
-						<div>
-							<p>{isMobile ? '정답/오답' : ''}</p>
-							{item.correct} / {item.wrong}
-						</div>
-						<div>
-							<p>{isMobile ? '점수' : ''}</p>
-							{item.score}점
-						</div>
-						<div>
-							<p>{isMobile ? '브라우저' : ''}</p>
-							{item.agent}
-						</div>
-						<div class="item_message">
-							<p>{isMobile ? '메세지' : ''}</p>
-							{item.message ? item.message : '-'}
+						<div class="content" style="color: var(--main-bg-lightViolet);">
+							<p>{isMobile ? '내용' : ''}</p>
+							{item.content}
 						</div>
 						<div>
 							<p>{isMobile ? '날짜' : ''}</p>
@@ -238,10 +192,6 @@
 						</div>
 					</div>
 				{/each}
-				{#if isLoading}
-					<LoadingSpinnerCircle />
-				{/if}
-				<InfiniteScroll fetchNext={fetchNextPage} />
 			</div>
 		</div>
 	</main>
@@ -302,6 +252,13 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
+	.content {
+		display: flex;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		max-width: 300px;
+	}
 
 	@media (max-width: 768px) {
 		.item_box {
@@ -337,6 +294,10 @@
 		}
 		.main_top_box span {
 			font-size: 1.5rem;
+		}
+		.content {
+			max-width: 100%;
+			overflow-x: scroll;
 		}
 	}
 </style>
