@@ -25,34 +25,43 @@ async function checkAdminPermission(authHeader) {
 }
 
 export async function GET({ request, params }) {
-	// 포트폴리오 더미 데이터 상세 조회 API
-
 	try {
 		const { id } = params
-
 		const { data, error } = await supabase.from('portfolios').select().eq('type', id).single()
 
 		if (error) {
 			throw { status: 404, message: '해당 데이터를 찾을 수 없습니다.', error }
 		}
 
-		return json(
-			{
+		return new Response(
+			JSON.stringify({
 				message: '포트폴리오 더미 데이터 상세 조회를 성공했습니다.',
 				data: data,
 				status: 200
-			},
-			{ status: 200 }
+			}),
+			{
+				status: 200,
+				headers: {
+					'Content-Type': 'application/json',
+					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app/'
+				}
+			}
 		)
 	} catch (err) {
 		console.error('서버 오류:', err)
-		return json(
-			{
+		return new Response(
+			JSON.stringify({
 				message: err.message,
 				status: err.status || 400,
 				error: err.error || '서버 오류'
-			},
-			{ status: err.status || 500 }
+			}),
+			{
+				status: err.status || 500,
+				headers: {
+					'Content-Type': 'application/json',
+					'Access-Control-Allow-Origin': 'https://portfolio-v1-nu-eosin.vercel.app/'
+				}
+			}
 		)
 	}
 }
