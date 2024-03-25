@@ -80,6 +80,12 @@
 			fileReader.onload = () => {
 				test.questions[index].sub_img_preview = fileReader.result
 				test.questions[index].sub_img_url = file
+
+				test.questions[index].isImageDeleted = false
+
+				if (!test.questions[index].old_sub_img_url) {
+                test.questions[index].old_sub_img_url = fileReader.result
+            }
 			}
 		}
 		event.target.value = ''
@@ -150,7 +156,6 @@
 
 			if (id) {
 				deleteTypeList.push(id)
-				console.log('deleteTypeList', deleteTypeList)
 			}
 		} else if (field === 'question') {
 			test.questions.splice(index, 1)
@@ -158,7 +163,6 @@
 			test = { ...test }
 			if (id) {
 				deleteList.push(id)
-				console.log('deleteList', deleteList)
 			}
 		}
 	}
@@ -251,24 +255,13 @@
 			}
 
 			if (isNew) {
-				return { ...rest, setQuestions }
+				return { ...rest, setQuestions, isNew }
 			} else {
 				return { ...rest, setQuestions, id: item.id }
 			}
 		})
 
 		formData.append('questions', JSON.stringify(questionsData))
-
-		console.log('title', test.title)
-		console.log('sub_title', test.sub_title)
-		console.log('description', test.description)
-		console.log('img_url', test.img_url)
-		console.log('oldImageUrl', oldImageUrl)
-		console.log('deleteList', deleteList)
-		console.log('deleteTypeList', deleteTypeList)
-		console.log('type_category', test.type_category)
-		console.log('types', test.types)
-		console.log('questions', questionsData)
 
 		await httpPutFormData(
 			`${endPoints.MBTI_TEST}/${pageId}`,
@@ -306,7 +299,9 @@
 		// 서브 이미지 도메인 경로 셋팅
 		const domainPath = 'https://aqnmhrbebgwoziqtyyns.supabase.co/storage/v1/object/public/'
 		questions.forEach((question) => {
-			question.sub_img_preview = domainPath + question.sub_img_url
+			if (question.sub_img_url) {
+				question.sub_img_preview = domainPath + question.sub_img_url
+			}
 		})
 	}
 
@@ -326,6 +321,7 @@
 						question.old_sub_img_url = question.sub_img_url
 					}
 				})
+
 
 				test.img_url = ''
 			},
@@ -472,6 +468,7 @@
 												event.preventDefault()
 												question.sub_img_preview = ''
 												question.sub_img_url = ''
+												question.isImageDeleted = true
 											}}
 										/>
 									{/if}
@@ -711,6 +708,8 @@
 		background-color: var(--main-bg-lightGray-02);
 	}
 	.save_button {
+		position: fixed;
+		top: 90%;
 		margin-top: 3rem;
 		padding: 1rem 6rem;
 		border: none;

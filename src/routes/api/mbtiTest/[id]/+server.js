@@ -282,6 +282,7 @@ export async function PUT({ request, params }) {
 							const { data: questionData, error: questionError } = await supabase
 								.from('mbti_questions')
 								.insert({
+									test_id: id,
 									set_id: setQuestionData[0].id,
 									set_content: setQuestion.set_content,
 									types: setQuestion.types
@@ -299,17 +300,19 @@ export async function PUT({ request, params }) {
 				} else if (item.id) {
 					if (file && file instanceof File) {
 						// 기존 질문에 대한 처리
-						const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
+						if (item.old_sub_img_url && item.old_sub_img_url.trim() !== '') {
+							const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
 
-						const { error: subImgDeleteError } = await supabase.storage
-							.from('admin_dashboard_bucket')
-							.remove([existingSubImage])
+							const { error: subImgDeleteError } = await supabase.storage
+								.from('admin_dashboard_bucket')
+								.remove([existingSubImage])
 
-						if (subImgDeleteError) {
-							throw {
-								status: 400,
-								message: '기존 질문 이미지 삭제에 실패했습니다.',
-								error: subImgDeleteError
+							if (subImgDeleteError) {
+								throw {
+									status: 400,
+									message: '기존 질문 이미지 삭제에 실패했습니다.',
+									error: subImgDeleteError
+								}
 							}
 						}
 
@@ -331,6 +334,7 @@ export async function PUT({ request, params }) {
 
 						sub_img_path = imgUploadData.fullPath
 					} else if (item.isImageDeleted && item.old_sub_img_url) {
+						console.log('이미지 삭제', item.old_sub_img_url)
 						// 이미지 삭제 경우: 기존 이미지 삭제
 						const existingSubImage = item.old_sub_img_url.replace('admin_dashboard_bucket/', '')
 						await supabase.storage.from('admin_dashboard_bucket').remove([existingSubImage])

@@ -547,6 +547,8 @@
 		font-weight: 600;
 	}
 	.save_button {
+		position: fixed;
+		top: 90%;
 		margin-top: 3rem;
 		padding: 1.2rem 6rem;
 		border: none;

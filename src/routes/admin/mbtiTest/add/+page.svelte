@@ -628,6 +628,8 @@
 		background-color: var(--main-bg-lightGray-02);
 	}
 	.save_button {
+		position: fixed;
+		top: 90%;
 		margin-top: 3rem;
 		padding: 1rem 6rem;
 		border: none;
