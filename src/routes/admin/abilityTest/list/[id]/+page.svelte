@@ -359,6 +359,37 @@
 						{/if}
 					</div>
 
+					<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
+					<label for={`sub_file_upload_${index}`} class="custom_file_upload">
+						<div style="cursor: pointer;" class="image_upload">
+							{#if question.sub_img_preview}
+								<img class="img_preview" src={question.sub_img_preview} alt="이미지" />
+							{:else}
+								<img src="/imgs/icon_add.svg" alt="이미지 추가" />
+							{/if}
+							{#if question.sub_img_preview}
+								<img
+									class="img_remove"
+									src="/imgs/icon_remove.svg"
+									alt="이미지 삭제"
+									on:click={(event) => {
+										event.preventDefault()
+										question.sub_img_preview = ''
+										question.sub_img_url = ''
+										question.isImageDeleted = true
+									}}
+								/>
+							{/if}
+						</div>
+						<input
+							type="file"
+							id={`sub_file_upload_${index}`}
+							style="display: none;"
+							class="file_upload"
+							on:change={(event) => handleSubFileChange(event, index)}
+						/>
+					</label>
+
 					<div class="question_set">
 						<label for="question_number">질문 번호</label>
 						<input
@@ -414,39 +445,9 @@
 						<label for={`score_${index}`}>배점(선택사항)</label>
 						<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
 					</div>
-					<label for={`sub_image_${index}`}>상세 이미지(선택사항)</label>
-					<label for={`sub_file_upload_${index}`} class="custom_file_upload">
-						<div style="cursor: pointer;" class="image_upload">
-							{#if question.sub_img_preview}
-								<img class="img_preview" src={question.sub_img_preview} alt="이미지" />
-							{:else}
-								<img src="/imgs/icon_add.svg" alt="이미지 추가" />
-							{/if}
-							{#if question.sub_img_preview}
-								<img
-									class="img_remove"
-									src="/imgs/icon_remove.svg"
-									alt="이미지 삭제"
-									on:click={(event) => {
-										event.preventDefault()
-										question.sub_img_preview = ''
-										question.sub_img_url = ''
-										question.isImageDeleted = true
-									}}
-								/>
-							{/if}
-						</div>
-						<input
-							type="file"
-							id={`sub_file_upload_${index}`}
-							style="display: none;"
-							class="file_upload"
-							on:change={(event) => handleSubFileChange(event, index)}
-						/>
-					</label>
+					<button on:click={addQuestion}>질문 추가</button>
 					<hr />
 				{/each}
-				<button on:click={addQuestion}>질문 추가</button>
 			</div>
 			<button class="save_button" on:click={saveTest}>저장</button>
 		</div>
