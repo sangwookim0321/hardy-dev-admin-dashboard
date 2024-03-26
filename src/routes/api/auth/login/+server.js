@@ -36,8 +36,26 @@ export async function POST({ request }) {
 			}
 		)
 
+		let userRole
+		if (user.role === 1) {
+			userRole = '최고 관리자'
+		} else if (user.role === 2) {
+			userRole = '일반 관리자'
+		} else if (user.role === 3) {
+			userRole = '최고 운영자'
+		} else if (user.role === 4) {
+			userRole = '일반 운영자'
+		}
+
 		return json(
-			{ accessToken: accessToken, refreshToken: refreshToken, message: '로그인 성공', status: 200 },
+			{
+				username: user.username,
+				role: userRole,
+				accessToken: accessToken,
+				refreshToken: refreshToken,
+				message: '로그인 성공',
+				status: 200
+			},
 			{ status: 200 }
 		)
 	} catch (err) {

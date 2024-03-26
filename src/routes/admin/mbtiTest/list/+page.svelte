@@ -202,7 +202,7 @@
 	<main>
 		<div class="main_top_box">
 			<img src="/imgs/icon_left.svg" alt="icon" />
-			<span style="color: var(--main-bg-violet);">MBTI 테스트 목록</span>
+			<span style="color: var(--main-bg-violet);">유형 테스트 목록</span>
 		</div>
 		<div class="main_box">
 			<div class="group_box_01">

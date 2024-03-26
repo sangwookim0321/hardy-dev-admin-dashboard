@@ -52,6 +52,8 @@
 			async (res) => {
 				sessionStorage.setItem('accessToken', res.data.accessToken)
 				sessionStorage.setItem('refreshToken', res.data.refreshToken)
+				sessionStorage.setItem('username', res.data.username)
+				sessionStorage.setItem('role', res.data.role)
 
 				await goto('/admin/dashBoard')
 				sweetToast('로그인 되었습니다!', 'success')

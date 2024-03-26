@@ -242,4 +242,13 @@
 		font-size: 1.5rem;
 		font-weight: 600;
 	}
+
+	@media (max-width: 768px) {
+		.test_details {
+			width: 100%;
+		}
+		.description {
+			height: 300px;
+		}
+	}
 </style>

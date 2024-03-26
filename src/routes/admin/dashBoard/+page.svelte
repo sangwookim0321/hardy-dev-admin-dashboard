@@ -21,3 +21,17 @@
 		<span>대시보드</span>
 	</div>
 </main>
+
+<style>
+	@media (max-width: 768px) {
+		.main_top_box {
+			margin: 2rem 0;
+		}
+		.main_top_box img {
+			width: 1rem;
+		}
+		.main_top_box span {
+			font-size: 1.5rem;
+		}
+	}
+</style>

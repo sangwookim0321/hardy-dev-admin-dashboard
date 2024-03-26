@@ -9,6 +9,8 @@
 
 	let currentPath
 	let refreshInterval
+	let username = ''
+	let role = ''
 
 	const unsubscribe = storePath.subscribe((value) => {
 		currentPath = value
@@ -26,7 +28,7 @@
 		},
 		{
 			id: 'mbtiTest',
-			title: 'MBTI 테스트',
+			title: '유형 테스트',
 			submenu: [
 				{ path: '/admin/mbtiTest/add', label: '등록' },
 				{ path: '/admin/mbtiTest/list', label: '목록' }
@@ -64,6 +66,8 @@
 	}
 
 	onMount(async () => {
+		username = sessionStorage.getItem('username')
+		role = sessionStorage.getItem('role')
 		await refresh()
 
 		refreshInterval = setInterval(async () => {
@@ -140,7 +144,10 @@
 	<div class="sidebar">
 		<div class="sidebar_logo_box">
 			<img class="sidebar_logo_img" src="/imgs/main-logo-128.png" alt="main-logo" />
-			<p>Hardy Dev. Admin App</p>
+			<div class="sidebar_info">
+				<p>Hardy Dev. Admin App</p>
+				<p>{role} {username}</p>
+			</div>
 			<button style="background-color: transparent; border: none;" on:click={toggleSidebar}>
 				<img src="/imgs/icon_s_menu.svg" alt="menu" class="mobile-menu" />
 			</button>
@@ -241,6 +248,10 @@
 	.sidebar_logo_box p {
 		font-weight: 600;
 		font-size: 1.5rem;
+		margin: 0.5rem 0;
+	}
+	.sidebar_info p {
+		padding: 1rem 0;
 	}
 	.sidebar_menu_box {
 		display: flex;
@@ -358,7 +369,7 @@
 		.content {
 			width: 100%;
 			margin-left: 0px;
-			padding: 6rem 1rem;
+			padding: 8rem 1rem;
 		}
 		.sidebar {
 			flex-direction: column;
@@ -374,6 +385,14 @@
 		}
 		.sidebar_logo_box p {
 			font-size: 1.2rem;
+		}
+		.sidebar_info {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		.sidebar_info p {
+			padding: 2px 0;
 		}
 		.sidebar_logo_img {
 			width: 3.5rem;
@@ -413,7 +432,7 @@
 			flex-direction: row;
 			justify-content: space-between;
 			width: 90%;
-			margin: 5.5rem 0;
+			margin: 7.5rem 0;
 		}
 		.sidebar_list_box_02 img {
 			width: 1.5rem;

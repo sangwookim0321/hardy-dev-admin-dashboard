@@ -3,7 +3,12 @@ import { supabase } from '$lib/util/supabaseClient'
 import { json } from '@sveltejs/kit'
 import jwt from 'jsonwebtoken'
 
-async function checkAdminPermission(authHeader) {
+const superAdmin = 1 // ALL
+const normalAdmin = 2 // HTTP Method
+const superOperator = 3 // GET
+const nomalOperator = 4 // Specific API
+
+async function checkAdminPermission(authHeader, requiredRole) {
 	if (!authHeader) {
 		throw { status: 401, message: '인증 토큰이 없습니다.' }
 	}
@@ -22,6 +27,14 @@ async function checkAdminPermission(authHeader) {
 	if (user.role !== 1) {
 		throw { status: 403, message: '권한이 없습니다.' }
 	}
+
+	if (user.role === 1) {
+		return
+	}
+
+	if (user.role > requiredRole) {
+		throw { status: 403, message: '권한이 없습니다.' }
+	}
 }
 
 export async function GET({ request }) {
@@ -29,7 +42,7 @@ export async function GET({ request }) {
 	const authHeader = request.headers.get('authorization')
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, superAdmin)
 
 		const { data, error } = await supabase.from('portfolios').select('*')
 
@@ -68,7 +81,7 @@ export async function POST({ request }) {
 	let requestData
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, superAdmin)
 		requestData = await request.json()
 
 		const { data, error } = await supabase
@@ -109,7 +122,7 @@ export async function DELETE({ request }) {
 	const authHeader = request.headers.get('authorization')
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, superAdmin)
 
 		const url = new URL(request.url)
 		const type = url.searchParams.get('type')

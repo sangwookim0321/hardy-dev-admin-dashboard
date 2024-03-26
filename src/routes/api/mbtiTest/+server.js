@@ -3,7 +3,12 @@ import { supabase } from '$lib/util/supabaseClient'
 import { json } from '@sveltejs/kit'
 import jwt from 'jsonwebtoken'
 
-async function checkAdminPermission(authHeader) {
+const superAdmin = 1 // ALL
+const normalAdmin = 2 // HTTP Method
+const superOperator = 3 // GET
+const nomalOperator = 4 // Specific API
+
+async function checkAdminPermission(authHeader, requiredRole) {
 	if (!authHeader) {
 		throw { status: 401, message: '인증 토큰이 없습니다.' }
 	}
@@ -19,7 +24,11 @@ async function checkAdminPermission(authHeader) {
 		throw { status: 404, message: '사용자를 찾을 수 없습니다.' }
 	}
 
-	if (user.role !== 1) {
+	if (user.role === 1) {
+		return
+	}
+
+	if (user.role > requiredRole) {
 		throw { status: 403, message: '권한이 없습니다.' }
 	}
 }
@@ -29,7 +38,7 @@ export async function GET({ request }) {
 	const authHeader = request.headers.get('authorization')
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, superOperator)
 
 		const url = new URL(request.url)
 
@@ -112,7 +121,7 @@ export async function POST({ request }) {
 	const authHeader = request.headers.get('authorization')
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, normalAdmin)
 
 		const formData = await request.formData()
 		const title = formData.get('title')
@@ -271,7 +280,7 @@ export async function PATCH({ request }) {
 	}
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, normalAdmin)
 
 		const { error } = await supabase.from('mbti_tests').update({ release: !release }).eq('id', id)
 
@@ -302,7 +311,7 @@ export async function DELETE({ request }) {
 	const authHeader = request.headers.get('authorization')
 
 	try {
-		await checkAdminPermission(authHeader)
+		await checkAdminPermission(authHeader, normalAdmin)
 
 		const { ids, oldImagePaths } = await request.json()
 

@@ -20,6 +20,7 @@
 		getItem()
 	})
 
+	let a = {item1: 2, item2: 3}
 	let test = {
 		title: '테스트 타이틀',
 		sub_title: '테스트 서브 타이틀',

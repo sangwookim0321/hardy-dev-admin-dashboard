@@ -131,9 +131,14 @@
 		test.questions[questionIndex].setQuestions[qIndex].types = questionTypes
 	}
 
-	function removeField(index, field) {
+	function removeField(index, field, name) {
 		if (field === 'type') {
 			test.types.splice(index, 1)
+			test.questions.forEach((question) => {
+				question.setQuestions.forEach((setQuestion) => {
+					setQuestion.types = setQuestion.types.filter((type) => type !== name)
+				})
+			})
 
 			test = { ...test }
 		} else if (field === 'question') {
@@ -230,7 +235,7 @@
 			formData,
 			true,
 			(res) => {
-				sweetToast('MBTI 테스트 등록 완료', 'success')
+				sweetToast('유형 테스트 등록 완료', 'success')
 				test = {
 					title: '',
 					sub_title: '',
@@ -286,7 +291,7 @@
 <main>
 	<div class="main_top_box">
 		<img src="/imgs/icon_left.svg" alt="icon" />
-		<span style="color: var(--main-bg-violet);">MBTI 테스트 추가</span>
+		<span style="color: var(--main-bg-violet);">유형 테스트 추가</span>
 	</div>
 
 	<div class="main_box">
@@ -345,7 +350,7 @@
 						class="type_remove_img"
 						src="/imgs/icon_remove.svg"
 						alt="remove"
-						on:click={() => removeField(index, 'type')}
+						on:click={() => removeField(index, 'type', type.type)}
 					/>
 				{/if}
 				<div class="type_set">
@@ -368,7 +373,7 @@
 								class="question_remove_img"
 								src="/imgs/icon_remove.svg"
 								alt="remove"
-								on:click={() => removeField(index, 'question')}
+								on:click={() => removeField(index, 'question', null)}
 							/>
 						{/if}
 					</div>

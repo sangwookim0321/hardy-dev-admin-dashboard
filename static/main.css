@@ -44,7 +44,9 @@ span,
 input,
 p,
 a,
-div, textarea, label {
+div,
+textarea,
+label {
 	font-family: 'Pretendard', sans-serif;
 }
 
@@ -57,7 +59,8 @@ table {
 	border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
 	padding: 2rem;
 	text-align: center;
 }
@@ -78,23 +81,28 @@ tr {
 
 /* 스크롤바 전체 스타일 */
 textarea::-webkit-scrollbar {
-    width: 6px; /* 스크롤바의 너비 */
-    height: 6px; /* 스크롤바의 높이 (가로 스크롤일 경우) */
+	width: 6px;
+	/* 스크롤바의 너비 */
+	height: 6px;
+	/* 스크롤바의 높이 (가로 스크롤일 경우) */
 }
 
 /* 스크롤바 트랙 (바탕) 스타일 */
 textarea::-webkit-scrollbar-track {
-	background: #f1f1f1; /* 스크롤바 트랙의 배경색 */
+	background: #f1f1f1;
+	/* 스크롤바 트랙의 배경색 */
 }
 
 /* 스크롤바 핸들 (움직이는 부분) 스타일 */
 textarea::-webkit-scrollbar-thumb {
-	background: #888; /* 스크롤바 핸들의 색상 */
+	background: #888;
+	/* 스크롤바 핸들의 색상 */
 }
 
 /* 스크롤바 핸들을 호버할 때 스타일 */
 textarea::-webkit-scrollbar-thumb:hover {
-	background: #555; /* 호버 시 핸들의 색상 */
+	background: #555;
+	/* 호버 시 핸들의 색상 */
 }
 
 .main_top_box {
@@ -102,15 +110,18 @@ textarea::-webkit-scrollbar-thumb:hover {
 	align-items: center;
 	margin-bottom: 5rem;
 }
+
 .main_top_box img {
 	margin-right: 10px;
 	width: 1.5rem;
 }
+
 .main_top_box span {
 	font-size: 2.5rem;
 	font-weight: 600;
 	color: var(--main-bg-purple);
 }
+
 .main_box {
 	display: flex;
 	flex-direction: column;
@@ -118,72 +129,110 @@ textarea::-webkit-scrollbar-thumb:hover {
 }
 
 .swal2-popup {
-	font-size: 1.5rem !important; /* 폰트 크기 조정 */
-	width: auto !important; /* 너비 자동 조정 */
-	padding: 1.5rem !important; /* 패딩 조정 */
+	font-size: 1.5rem !important;
+	/* 폰트 크기 조정 */
+	width: auto !important;
+	/* 너비 자동 조정 */
+	padding: 1.5rem !important;
+	/* 패딩 조정 */
 }
 
 .swal2-title {
-	font-size: 2rem !important; /* 타이틀 폰트 크기 조정 */
+	font-size: 2rem !important;
+	/* 타이틀 폰트 크기 조정 */
 }
 
 .swal2-content {
-	font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
+	font-size: 1.5rem !important;
+	/* 내용 폰트 크기 조정 */
 }
 
 .swal2-styled.swal2-confirm {
-	padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-	font-size: 2rem !important; /* 확인 버튼 폰트 크기 조정 */
+	padding: 0.5rem 1rem !important;
+	/* 확인 버튼 패딩 조정 */
+	font-size: 2rem !important;
+	/* 확인 버튼 폰트 크기 조정 */
 }
 
 .swal2-styled.swal2-cancel {
-	padding: 0.5rem 1rem !important; /* 취소 버튼 패딩 조정 */
-	font-size: 2rem !important; /* 취소 버튼 폰트 크기 조정 */
+	padding: 0.5rem 1rem !important;
+	/* 취소 버튼 패딩 조정 */
+	font-size: 2rem !important;
+	/* 취소 버튼 폰트 크기 조정 */
 }
 
 .light-pagination-nav .pagination-nav {
-    box-shadow: none !important;
+	box-shadow: none !important;
 }
 
 /* 모바일 기기용 SweetAlert2 스타일 조정 */
 @media (max-width: 768px) {
 	.swal2-popup {
-		font-size: 1.5rem !important; /* 폰트 크기 조정 */
-		width: auto !important; /* 너비 자동 조정 */
-		padding: 1.5rem !important; /* 패딩 조정 */
+		font-size: 1.5rem !important;
+		/* 폰트 크기 조정 */
+		width: auto !important;
+		/* 너비 자동 조정 */
+		padding: 1.5rem !important;
+		/* 패딩 조정 */
 	}
 
 	.swal2-title {
-		font-size: 1.5rem !important; /* 타이틀 폰트 크기 조정 */
+		font-size: 1.5rem !important;
+		/* 타이틀 폰트 크기 조정 */
 	}
 
 	.swal2-content {
-		font-size: 1.5rem !important; /* 내용 폰트 크기 조정 */
+		font-size: 1.5rem !important;
+		/* 내용 폰트 크기 조정 */
 	}
 
 	.swal2-styled.swal2-confirm {
-		padding: 0.5rem 1rem !important; /* 확인 버튼 패딩 조정 */
-		font-size: 1.8rem !important; /* 확인 버튼 폰트 크기 조정 */
+		padding: 0.5rem 1rem !important;
+		/* 확인 버튼 패딩 조정 */
+		font-size: 1.8rem !important;
+		/* 확인 버튼 폰트 크기 조정 */
 	}
 
 	.swal2-styled.swal2-cancel {
-		padding: 0.5rem 1rem !important; /* 취소 버튼 패딩 조정 */
-		font-size: 1.8rem !important; /* 취소 버튼 폰트 크기 조정 */
+		padding: 0.5rem 1rem !important;
+		/* 취소 버튼 패딩 조정 */
+		font-size: 1.8rem !important;
+		/* 취소 버튼 폰트 크기 조정 */
 	}
+
 	.table_box {
 		overflow-x: scroll;
 	}
+
 	th {
-		font-size: 1rem; /* 모바일 화면에서 테이블 헤더의 폰트 크기 조정 */
-		white-space: nowrap; /* 텍스트가 일자로 가로 정렬되도록 설정 */
+		font-size: 1rem;
+		/* 모바일 화면에서 테이블 헤더의 폰트 크기 조정 */
+		white-space: nowrap;
+		/* 텍스트가 일자로 가로 정렬되도록 설정 */
 	}
+
 	td {
 		white-space: nowrap;
-		padding: 1rem; /* 모바일 화면에서 셀의 패딩 줄임 */
-		font-size: 1rem; /* 모바일 화면에서 폰트 크기 줄임 */
+		padding: 1rem;
+		/* 모바일 화면에서 셀의 패딩 줄임 */
+		font-size: 1rem;
+		/* 모바일 화면에서 폰트 크기 줄임 */
 	}
+
 	td button {
 		font-size: 0.9rem;
 		padding: 0.5rem 1rem;
+	}
+
+	.main_top_box {
+		margin: 2rem 0;
+	}
+
+	.main_top_box img {
+		width: 1rem;
+	}
+
+	.main_top_box span {
+		font-size: 1.5rem;
 	}
 }

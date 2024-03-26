@@ -148,9 +148,14 @@
 		test.questions[questionIndex].setQuestions[qIndex].types = questionTypes
 	}
 
-	function removeField(index, field, id) {
+	function removeField(index, field, id, name) {
 		if (field === 'type') {
 			test.types.splice(index, 1)
+			test.questions.forEach((question) => {
+				question.setQuestions.forEach((setQuestion) => {
+					setQuestion.types = setQuestion.types.filter((type) => type !== name)
+				})
+			})
 
 			test = { ...test }
 
@@ -363,7 +368,7 @@
 					movePage()
 				}}
 			/>
-			<span style="color: var(--main-bg-violet);">MBTI 테스트 상세</span>
+			<span style="color: var(--main-bg-violet);">유형 테스트 상세</span>
 		</div>
 
 		<div class="main_box">
@@ -422,7 +427,7 @@
 							class="type_remove_img"
 							src="/imgs/icon_remove.svg"
 							alt="remove"
-							on:click={() => removeField(index, 'type', type.id)}
+							on:click={() => removeField(index, 'type', type.id, type.type)}
 						/>
 					{/if}
 					<div class="type_set">
@@ -445,7 +450,7 @@
 									class="question_remove_img"
 									src="/imgs/icon_remove.svg"
 									alt="remove"
-									on:click={() => removeField(index, 'question', question.id)}
+									on:click={() => removeField(index, 'question', question.id, null)}
 								/>
 							{/if}
 						</div>
