@@ -25,6 +25,7 @@
 		title: '테스트 타이틀',
 		sub_title: '테스트 서브 타이틀',
 		description: '설명설명',
+		category: '',
 		img_url: '',
 		img_preview: '',
 		questions: [
@@ -169,6 +170,11 @@
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
+		if (!test.category) {
+			formData.append('category', '능력고사')
+		} else {
+			formData.append('category', test.category)
+		}
 		if (test.img_url instanceof File) {
 			formData.append('img', test.img_url)
 		}
@@ -339,6 +345,8 @@
 					<input type="text" id="sub_title" class="sub_title" bind:value={test.sub_title} />
 					<label for="description">설명</label>
 					<textarea id="description" class="description" bind:value={test.description}></textarea>
+					<label for="title">분류</label>
+					<input type="text" id="category" class="title" placeholder="미입력시 기본 '능력고사'" bind:value={test.category} />
 				</div>
 			</div>
 

@@ -100,6 +100,7 @@ export async function PUT({ request, params }) {
 		const title = formData.get('title')
 		const sub_title = formData.get('sub_title')
 		const description = formData.get('description')
+		const category = formData.get('category')
 		const imgFile = formData.get('img')
 		const oldImageUrl = formData.get('oldImageUrl')
 		const questions = JSON.parse(formData.get('questions'))
@@ -151,7 +152,14 @@ export async function PUT({ request, params }) {
 
 		const { data, error } = await supabase
 			.from('ability_tests')
-			.update({ title, sub_title, description, img_url: main_img_path, updated_at: new Date() })
+			.update({
+				title,
+				sub_title,
+				description,
+				category,
+				img_url: main_img_path,
+				updated_at: new Date()
+			})
 			.eq('id', id)
 
 		if (error) {

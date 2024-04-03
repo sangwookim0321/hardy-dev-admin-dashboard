@@ -135,6 +135,7 @@ export async function POST({ request }) {
 		const title = formData.get('title')
 		const sub_title = formData.get('sub_title')
 		const description = formData.get('description')
+		const category = formData.get('category')
 		const imgFile = formData.get('img')
 		const questions = JSON.parse(formData.get('questions'))
 
@@ -164,6 +165,7 @@ export async function POST({ request }) {
 				title: title,
 				sub_title: sub_title,
 				description: description,
+				category: category,
 				img_url: img_path,
 				release: false,
 				created_at: new Date()

@@ -42,6 +42,13 @@
 				{ path: '/admin/portfolio/add', label: '등록' },
 				{ path: '/admin/portfolio/list', label: '목록' }
 			]
+		},
+		{
+			id: 'autoCrawling',
+			title: '오토 크롤링',
+			submenu: [
+				{ path: '/admin/autoCrawling/collection', label: '수집' },
+			]
 		}
 	]
 

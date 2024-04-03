@@ -310,7 +310,7 @@
 								}}>삭제</button
 							>
 						</th>
-						<th>ID</th>
+						<th>분류</th>
 						<th>테스트 이름</th>
 						<th>서브 타이틀</th>
 						<th>공개여부</th>
@@ -329,7 +329,7 @@
 											on:change={() => setId(item.id, item.img_url)}
 										/>
 									</td>
-									<td>{item.id}</td>
+									<td>{item.category}</td>
 									<td>{item.title}</td>
 									<td>{item.sub_title}</td>
 									<td>
