@@ -9,6 +9,10 @@
 		currentPath = $page.url.pathname
 		storePath.set(currentPath)
 	})
+
+	function testAdd() {
+		prompt('관리자 등록')
+	}
 </script>
 
 <main>
@@ -45,7 +49,7 @@
 		<hr />
 
 		<div class="admin_list">
-			<button>관리자 등록</button>
+			<button on:click={testAdd}>관리자 등록</button>
 			<div class="table_box">
 				<table>
 					<tr>
