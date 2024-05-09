@@ -35,7 +35,7 @@ async function checkAdminPermission(authHeader, requiredRole) {
 }
 
 export async function GET({ request }) {
-	// 능력고사 테스트 목록 조회 API
+	// 주관식 테스트 목록 조회 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -51,7 +51,7 @@ export async function GET({ request }) {
 		const limit = parseInt(url.searchParams.get('limit') || 5) // 페이지당 표시할 개수
 		const offset = (page - 1) * limit
 
-		let query = supabase.from('ability_tests').select('*', { count: 'exact' })
+		let query = supabase.from('subjective_tests').select('*', { count: 'exact' })
 
 		// 검색어 적용
 		if (search) {
@@ -89,7 +89,7 @@ export async function GET({ request }) {
 
 		// 집계 데이터 조회
 		const { data: totalData, error: totalDataError } = await supabase
-			.from('ability_total')
+			.from('subjective_total')
 			.select('*')
 
 		if (totalDataError) {
@@ -126,7 +126,7 @@ export async function GET({ request }) {
 }
 
 export async function POST({ request }) {
-	// 능력고사 테스트 등록 API
+	// 주관식 테스트 등록 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -146,12 +146,23 @@ export async function POST({ request }) {
 		}
 
 		// 메인 이미지 업로드
+		const mainImageBuffer = await imgFile.arrayBuffer()
+		const resizedMainImageBuffer = await sharp(Buffer.from(mainImageBuffer))
+			.resize(500, 500) // 크기 조정
+			.webp() // webp 형식으로 변환
+			.toBuffer()
+
 		const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 			.from('admin_dashboard_bucket')
-			.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
-				cacheControl: '3600',
-				upsert: false
-			})
+			.upload(
+				`subjectiveTest-images/${Date.now()}_${imgFile.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
+				resizedMainImageBuffer,
+				{
+					contentType: 'image/webp',
+					cacheControl: '3600',
+					upsert: false
+				}
+			)
 
 		if (imgUploadError) {
 			console.error('이미지 업로드 실패:', imgUploadError)
@@ -161,7 +172,7 @@ export async function POST({ request }) {
 		const img_path = imgUploadData.fullPath
 		// 테스트 정보 저장
 		const { data, error } = await supabase
-			.from('ability_tests')
+			.from('subjective_tests')
 			.insert({
 				title: title,
 				sub_title: sub_title,
@@ -194,7 +205,7 @@ export async function POST({ request }) {
 					const { data: subImgUploadData, error: subImgUploadError } = await supabase.storage
 						.from('admin_dashboard_bucket')
 						.upload(
-							`abilityTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
+							`subjectiveTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
 							resizedImageBuffer,
 							{
 								contentType: 'image/webp',
@@ -223,7 +234,7 @@ export async function POST({ request }) {
 		}))
 
 		const { error: questionsAddError } = await supabase
-			.from('ability_questions')
+			.from('subjective_questions')
 			.insert(questionsWithTestId)
 
 		if (questionsAddError) {
@@ -246,7 +257,7 @@ export async function POST({ request }) {
 }
 
 export async function PATCH({ request }) {
-	// 능력고사 테스트 공개상태 변경 API
+	// 주관식 테스트 공개상태 변경 API
 	const authHeader = request.headers.get('authorization')
 
 	const { id, release } = await request.json()
@@ -262,7 +273,7 @@ export async function PATCH({ request }) {
 		await checkAdminPermission(authHeader, normalAdmin)
 
 		const { error } = await supabase
-			.from('ability_tests')
+			.from('subjective_tests')
 			.update({ release: !release })
 			.eq('id', id)
 
@@ -289,7 +300,7 @@ export async function PATCH({ request }) {
 }
 
 export async function DELETE({ request }) {
-	// 능력고사 테스트 삭제 API
+	// 주관식 테스트 삭제 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -307,7 +318,7 @@ export async function DELETE({ request }) {
 
 		// 질문의 서브 이미지 URL 조회
 		const { data: questions, error: questionsFetchError } = await supabase
-			.from('ability_questions')
+			.from('subjective_questions')
 			.select('sub_img_url')
 			.in('test_id', ids)
 
@@ -332,7 +343,7 @@ export async function DELETE({ request }) {
 
 		// 질문 삭제
 		const { error: questionsDeleteError } = await supabase
-			.from('ability_questions')
+			.from('subjective_questions')
 			.delete()
 			.in('test_id', ids)
 
@@ -341,7 +352,10 @@ export async function DELETE({ request }) {
 			throw { status: 400, message: '질문 삭제 실패', error: questionsDeleteError }
 		}
 
-		const { error: testsDeleteError } = await supabase.from('ability_tests').delete().in('id', ids)
+		const { error: testsDeleteError } = await supabase
+			.from('subjective_tests')
+			.delete()
+			.in('id', ids)
 
 		if (testsDeleteError) {
 			console.error('테스트 삭제 실패:', testsDeleteError)

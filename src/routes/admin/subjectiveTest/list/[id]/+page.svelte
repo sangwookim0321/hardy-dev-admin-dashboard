@@ -1,4 +1,4 @@
-<!-- 능력고사 테스트 상세 페이지 -->
+<!-- 주관식 테스트 상세 페이지 -->
 <script>
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores.js'
@@ -20,7 +20,6 @@
 		getItem()
 	})
 
-	let a = {item1: 2, item2: 3}
 	let test = {
 		title: '테스트 타이틀',
 		sub_title: '테스트 서브 타이틀',
@@ -31,10 +30,9 @@
 		questions: [
 			{
 				question_number: 1,
-				question_name: '질문 이름',
-				question_list: ['1.질문', '2.질문'],
+				question_name: '문제 이름',
+				answer_list: [],
 				question_etc: '기타설명설명',
-				answer: 2,
 				score: 10,
 				sub_img_url: '',
 				sub_img_preview: '',
@@ -79,9 +77,8 @@
 			{
 				question_number: test.questions.length + 1,
 				question_name: '',
-				question_list: [],
+				answer_list: [],
 				question_etc: '',
-				answer: 0,
 				score: 0,
 				sub_img_url: '',
 				sub_img_preview: '',
@@ -98,7 +95,7 @@
 	}
 
 	function addOption(index) {
-		test.questions[index].question_list = [...test.questions[index].question_list, '']
+		test.questions[index].answer_list = [...test.questions[index].answer_list, '']
 
 		setTimeout(() => {
 			window.scrollBy({
@@ -111,7 +108,7 @@
 
 	function removeField(index, index2, type, id) {
 		if (type === 'option') {
-			test.questions[index].question_list.splice(index2, 1)
+			test.questions[index].answer_list.splice(index2, 1)
 			test = { ...test }
 		} else if (type === 'question') {
 			test.questions.splice(index, 1)
@@ -150,29 +147,24 @@
 
 		for (let i = 0; i < test.questions.length; i++) {
 			if (!test.questions[i].question_name) {
-				sweetToast('질문 이름을 입력해주세요', 'warning')
+				sweetToast('문제 이름을 입력해주세요', 'warning')
 				return
 			}
 
-			if (test.questions[i].question_list.length < 2) {
+			if (test.questions[i].answer_list.length < 2) {
 				sweetToast('옵션을 2개 이상 입력해주세요', 'warning')
 				return
 			}
 
-			if (test.questions[i].answer < 1) {
-				sweetToast('정답을 입력해주세요', 'warning')
-				return
-			}
 		}
 
-		
 		let formData = new FormData()
 
 		formData.append('title', test.title)
 		formData.append('sub_title', test.sub_title)
 		formData.append('description', test.description)
 		if (!test.category) {
-			formData.append('category', '능력고사')
+			formData.append('category', '주관식')
 		} else {
 			formData.append('category', test.category)
 		}
@@ -205,8 +197,8 @@
 		formData.append('questions', JSON.stringify(questionsData))
 
 		await httpPutFormData(
-			`${endPoints.ABILITY_TEST}/${pageId}`,
-			'abilityTestEdit',
+			`${endPoints.SUBJECTIVE_TEST}/${pageId}`,
+			'subjectiveTestEdit',
 			formData,
 			true,
 			(res) => {
@@ -249,8 +241,8 @@
 
 	async function getItem() {
 		await httpGet(
-			`${endPoints.ABILITY_TEST}/${pageId}`,
-			`abilityTestDetail/${pageId}`,
+			`${endPoints.SUBJECTIVE_TEST}/${pageId}`,
+			`subjectiveTestDetail/${pageId}`,
 			true,
 			(res) => {
 				test = res.data.data
@@ -258,7 +250,7 @@
 				setImageUrl(test.img_url)
 				setImageUrlForQuestions(test.questions)
 
-				// 각 질문에 대해 old_sub_img_url 속성 추가
+				// 각 문제에 대해 old_sub_img_url 속성 추가
 				test.questions.forEach((question) => {
 					// 서브 이미지 URL을 old_sub_img_url에 저장
 					if (question.sub_img_url) {
@@ -306,7 +298,7 @@
 					movePage()
 				}}
 			/>
-			<span>능력고사 테스트 상세</span>
+			<span style="color: #fd7e14">주관식 테스트 상세</span>
 		</div>
 
 		<div class="main_box">
@@ -347,7 +339,7 @@
 					<label for="description">설명</label>
 					<textarea id="description" class="description" bind:value={test.description}></textarea>
 					<label for="title">분류</label>
-					<input type="text" id="category" class="title" placeholder="미입력시 기본 '능력고사'" bind:value={test.category} />
+					<input type="text" id="category" class="title" placeholder="미입력시 기본 '주관식'" bind:value={test.category} />
 				</div>
 			</div>
 
@@ -401,14 +393,14 @@
 					</label>
 
 					<div class="question_set">
-						<label for="question_number">질문 번호</label>
+						<label for="question_number">문제 번호</label>
 						<input
 							type="number"
 							id={`question_number_${index}`}
 							class="question_number"
 							bind:value={question.question_number}
 						/>
-						<label for={`question_name_${index}`}>질문 이름</label>
+						<label for={`question_name_${index}`}>문제 이름</label>
 						<input
 							type="text"
 							id={`question_name_${index}`}
@@ -421,13 +413,13 @@
 							class="question_etc"
 							bind:value={question.question_etc}
 						></textarea>
-						{#each question.question_list as option, index2}
-							<div class="question_list_box">
+						{#each question.answer_list as option, index2}
+							<div class="answer_list_box">
 								<label
 									style="font-weight: 600; color: var(--secondary-color);"
 									for={`option_${index}_${index2}`}>{index2 + 1}번 옵션</label
 								>
-								{#if question.question_list.length > 2}
+								{#if question.answer_list.length > 2}
 									<img
 										class="remove_img"
 										src="/imgs/icon_remove.svg"
@@ -438,24 +430,17 @@
 							</div>
 
 							<input
-								class="question_list_input"
+								class="answer_list_input"
 								type="text"
 								id={`option_${index}_${index2}`}
-								bind:value={question.question_list[index2]}
+								bind:value={question.answer_list[index2]}
 							/>
 						{/each}
-						<button on:click={() => addOption(index)}>옵션(객관식) 추가(최소2개 이상 필수)</button>
-						<label for={`answer_${index}`}>정답</label>
-						<input
-							type="number"
-							id={`answer_${index}`}
-							class="answer"
-							bind:value={question.answer}
-						/>
+						<button on:click={() => addOption(index)}>주관식 정답 추가(최소1개 이상 필수)</button>
 						<label for={`score_${index}`}>배점(선택사항)</label>
 						<input type="number" id={`score_${index}`} class="score" bind:value={question.score} />
 					</div>
-					<button on:click={addQuestion}>질문 추가</button>
+					<button on:click={addQuestion}>문제 추가</button>
 					<hr />
 				{/each}
 			</div>
@@ -588,12 +573,12 @@
 		cursor: pointer;
 		margin-left: 1rem;
 	}
-	.question_list_box {
+	.answer_list_box {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 	}
-	.question_list_input {
+	.answer_list_input {
 		border: 1px solid var(--main-bg-gray);
 		border-radius: 10px;
 		padding: 1.2rem 1rem;

@@ -34,7 +34,7 @@ async function checkAdminPermission(authHeader, requiredRole) {
 }
 
 export async function GET({ request }) {
-	// 능려력 테스트 결과 조회
+	// 주관식 테스트 결과 조회
 	const authHeader = request.headers.get('authorization')
 
 	const url = new URL(request.url)
@@ -46,7 +46,7 @@ export async function GET({ request }) {
 		await checkAdminPermission(authHeader, superOperator)
 
 		const { error: testError, count: totalCount } = await supabase
-			.from('ability_tests_result')
+			.from('subjective_tests_result')
 			.select('*', { count: 'exact' })
 
 		if (testError) {
@@ -55,7 +55,7 @@ export async function GET({ request }) {
 		}
 
 		const { data, error, count } = await supabase
-			.from('ability_tests_result')
+			.from('subjective_tests_result')
 			.select('*')
 			.range(offset, offset + limit - 1)
 			.order('created_at', { ascending: false })
@@ -91,7 +91,7 @@ export async function GET({ request }) {
 }
 
 export async function DELETE({ request }) {
-	// 능력고사 테스트 결과 삭제
+	// 주관식 테스트 결과 삭제
 	const authHeader = request.headers.get('authorization')
 
 	const url = new URL(request.url)
@@ -100,7 +100,7 @@ export async function DELETE({ request }) {
 	try {
 		await checkAdminPermission(authHeader, normalAdmin)
 
-		const { error } = await supabase.from('ability_tests_result').delete().eq('id', id)
+		const { error } = await supabase.from('subjective_tests_result').delete().eq('id', id)
 
 		if (error) {
 			console.error('테스트 결과 아이템 삭제 실패:', error)

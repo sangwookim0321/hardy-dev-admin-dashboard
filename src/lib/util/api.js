@@ -61,6 +61,8 @@ const useApi = () => {
 		REFRESH_TOKEN: '/api/auth/refresh', // 토큰 갱신
 		ABILITY_TEST: '/api/abilityTest', // 능력고사 테스트(GET,POST,PUT,PATCH,DELETE)
 		ABILITY_TEST_RESULT: '/api/abilityTest/result', // 능력고사 결과
+		SUBJECTIVE_TEST: '/api/subjectiveTest', // 주관식 테스트(GET,POST,PUT,PATCH,DELETE)
+		SUBJECTIVE_RESULT: '/api/subjectiveTest/result', // 주관식 테스트 결과
 		MBTI_TEST: '/api/mbtiTest', // MBTI 테스트(GET,POST,PUT,PATCH,DELETE)
 		PORTFOLIO: '/api/portfolio',
 		AUTO_CRAWLING: '/api/autoCrawling'

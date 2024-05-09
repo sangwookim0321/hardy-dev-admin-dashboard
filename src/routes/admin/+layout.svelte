@@ -27,6 +27,15 @@
 			]
 		},
 		{
+			id: 'subjectiveTest',
+			title: '주관식 테스트',
+			submenu: [
+				{ path: '/admin/subjectiveTest/add', label: '등록' },
+				{ path: '/admin/subjectiveTest/list', label: '목록' },
+				{ path: '/admin/subjectiveTest/result', label: '결과' }
+			]
+		},
+		{
 			id: 'mbtiTest',
 			title: '유형 테스트',
 			submenu: [

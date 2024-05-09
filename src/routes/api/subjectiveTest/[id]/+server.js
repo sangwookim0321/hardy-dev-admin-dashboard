@@ -35,7 +35,7 @@ async function checkAdminPermission(authHeader, requiredRole) {
 }
 
 export async function GET({ request, params }) {
-	// 능력고사 테스트 상세 조회 API
+	// 주관식 테스트 상세 조회 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -43,14 +43,14 @@ export async function GET({ request, params }) {
 
 		const { id } = params
 
-		const { data, error } = await supabase.from('ability_tests').select().eq('id', id).single()
+		const { data, error } = await supabase.from('subjective_tests').select().eq('id', id).single()
 
 		if (error) {
 			throw { status: 404, message: '해당 테스트를 찾을 수 없습니다.', error }
 		}
 
 		const { data: questionsData, error: questionsError } = await supabase
-			.from('ability_questions')
+			.from('subjective_questions')
 			.select()
 			.eq('test_id', id)
 			.order('question_number', { ascending: true })
@@ -85,7 +85,7 @@ export async function GET({ request, params }) {
 }
 
 export async function PUT({ request, params }) {
-	// 능력고사 테스트 수정 API
+	// 주관식 테스트 수정 API
 	const authHeader = request.headers.get('authorization')
 
 	try {
@@ -132,7 +132,7 @@ export async function PUT({ request, params }) {
 
 			const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 				.from('admin_dashboard_bucket')
-				.upload(`abilityTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
+				.upload(`subjectiveTest-images/${Date.now()}_${imgFile.name}`, imgFile, {
 					cacheControl: '3600',
 					upsert: false
 				})
@@ -152,7 +152,7 @@ export async function PUT({ request, params }) {
 		}
 
 		const { data, error } = await supabase
-			.from('ability_tests')
+			.from('subjective_tests')
 			.update({
 				title,
 				sub_title,
@@ -187,7 +187,7 @@ export async function PUT({ request, params }) {
 						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 							.from('admin_dashboard_bucket')
 							.upload(
-								`abilityTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
+								`subjectiveTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
 								resizedImageBuffer,
 								{
 									contentType: 'image/webp',
@@ -208,14 +208,13 @@ export async function PUT({ request, params }) {
 					}
 
 					const { data: questionData, error: questionError } = await supabase
-						.from('ability_questions')
+						.from('subjective_questions')
 						.insert({
 							test_id: id,
 							question_number: item.question_number,
 							question_name: item.question_name,
-							question_list: item.question_list,
+							answer_list: item.answer_list,
 							question_etc: item.question_etc,
-							answer: item.answer,
 							score: item.score,
 							sub_img_url: sub_img_path
 						})
@@ -254,7 +253,7 @@ export async function PUT({ request, params }) {
 						const { data: imgUploadData, error: imgUploadError } = await supabase.storage
 							.from('admin_dashboard_bucket')
 							.upload(
-								`abilityTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
+								`subjectiveTest-sub-images/${Date.now()}_${file.name.replace(/(\.[\w\d_-]+)$/i, '.webp')}`,
 								resizedImageBuffer,
 								{
 									contentType: 'image/webp',
@@ -284,13 +283,12 @@ export async function PUT({ request, params }) {
 
 					// 질문 업데이트 로직 (sub_img_path를 포함하여 질문 정보 업데이트)
 					const { data: questionData, error: questionError } = await supabase
-						.from('ability_questions')
+						.from('subjective_questions')
 						.update({
 							question_number: item.question_number,
 							question_name: item.question_name,
-							question_list: item.question_list,
+							answer_list: item.answer_list,
 							question_etc: item.question_etc,
-							answer: item.answer,
 							score: item.score,
 							sub_img_url: sub_img_path // 새로운 이미지 경로 또는 기존 이미지 경로
 						})
@@ -315,7 +313,7 @@ export async function PUT({ request, params }) {
 				deleteList.map(async (id) => {
 					// 먼저 삭제할 질문의 sub_img_url을 조회
 					const { data: question, error: questionFetchError } = await supabase
-						.from('ability_questions')
+						.from('subjective_questions')
 						.select('sub_img_url')
 						.eq('id', id)
 						.single()
@@ -346,7 +344,7 @@ export async function PUT({ request, params }) {
 
 					// 질문 레코드 삭제
 					const { error: questionDeleteError } = await supabase
-						.from('ability_questions')
+						.from('subjective_questions')
 						.delete()
 						.eq('id', id)
 
